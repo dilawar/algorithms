@@ -5,7 +5,7 @@
 # Author         : Dilawar Singh
 # Email          : dilawars@ncbs.res.in
 #
-# Description    :
+# Description    : http://math.stackexchange.com/questions/445919/black-and-white-balls-in-the-box
 #
 # Logs           :
 
@@ -21,6 +21,9 @@ def singleStep() :
 
 
   while len(balls) > 1 :
+    # we can shuffle it once. But we are doing after each step, just to make
+    # sure that we select two balls more randomly. This makes this algorithm to
+    # run much slower.
     random.shuffle(balls)
     firstBall = balls.pop()
     secondBall = balls.pop()
@@ -33,5 +36,6 @@ def singleStep() :
 
 
 if __name__ == "__main__" :
+  # run it at least 10 times to see what is left in the end.
   for i in range(0, 10) :
     singleStep()
