@@ -21,9 +21,11 @@ def singleStep() :
 
 
   while len(balls) > 1 :
-    # we can shuffle it once. But we are doing after each step, just to make
-    # sure that we select two balls more randomly. This makes this algorithm to
-    # run much slower.
+
+    # we can shuffle the balls once outside this loop but we are shuffling at
+    # each step, just to make sure that we select two balls more randomly. This
+    # makes this algorithm to run much slower.
+
     random.shuffle(balls)
     firstBall = balls.pop()
     secondBall = balls.pop()
