@@ -16,10 +16,13 @@ from random import choice
 
 words = []
 
-def populateDB() :
+def populateDB(wordLength) :
   global words 
-  with open("./sgb-words.txt") as f :
-    words = f.read().split()
+  with open("/usr/share/dict/words") as f :
+    allwords = f.read().split()
+  for w in allwords :
+    if len(w) == wordLength :
+      words.append(w)
 
 def cowsAndBull(word, correctWord) :
   # bulls are no of letters on the same position in both words.
@@ -29,7 +32,6 @@ def cowsAndBull(word, correctWord) :
   bulls = 0
   cows = 0
   for i in range(0, len(wordA)-1) :
-    print i
     if wordA[i] == wordB[i] :
       bulls += 1
       if len(wordA) != i-1 :
@@ -42,19 +44,27 @@ def cowsAndBull(word, correctWord) :
   setA = set(wordA)
   setB = set(wordB)
   cows = setA.intersection(setB)
-  return bulls, cows 
+  return bulls, len(cows) 
   
 
 if __name__ == "__main__" :
-  populateDB()
+  wordWidth = 4
+  populateDB(wordWidth)
   # randomly select one word.
   chosenWord = choice(words)
-  guessedWords = ''
-  while(chosenWord != guessedWords) :
-    fiveLetterWord = raw_input("Guess a word : ")
-    fiveLetterWord = fiveLetterWord.strip()
-    while(len(fiveLetterWord) != 5) :
-      print("ERROR: Not a five letter word. Try again.")
-      fiveLetterWord = raw_input("Guess a word : ")
-      fiveLetterWord = fiveLetterWord.strip()
-    print cowsAndBull(fiveLetterWord, chosenWord)
+  myWord = ''
+  while(chosenWord != myWord) :
+    if(myWord != "????") :
+      myWord = raw_input("Guess a word : ")
+      myWord = myWord.strip()
+      while(len(myWord) != wordWidth) :
+        print("ERROR: Not a {0} letter word. Try again.".format(wordWidth))
+        myWord = raw_input("Guess : ")
+        myWord = myWord.strip()
+      b, c =  cowsAndBull(myWord, chosenWord)
+      print("|-- {0} bulls, {1} cows".format(b, c))
+    else :
+      print("The word is : {0}".format(chosenWord))
+      sys.exit()
+  print("Congrats! This was the correct word")
+  
