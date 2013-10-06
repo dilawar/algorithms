@@ -10,15 +10,15 @@
 # Logs           :
 
 
-import os 
 import sys
+import cmd
 from random import choice
 
 words = []
 
 def populateDB(wordLength) :
   global words 
-  with open("/usr/share/dict/words") as f :
+  with open("words") as f :
     allwords = f.read().split()
   for w in allwords :
     if len(w) == wordLength :
@@ -44,7 +44,7 @@ def cowsAndBull(word, correctWord) :
   setA = set(wordA)
   setB = set(wordB)
   cows = setA.intersection(setB)
-  return bulls, len(cows) 
+  print("{2} has {0} bulls, {1} cows".format(bulls, len(cows), word))
   
 
 if __name__ == "__main__" :
@@ -57,12 +57,13 @@ if __name__ == "__main__" :
     if(myWord != "????") :
       myWord = raw_input("Guess a word : ")
       myWord = myWord.strip()
-      while(len(myWord) != wordWidth) :
+      if(len(myWord) != wordWidth) :
         print("ERROR: Not a {0} letter word. Try again.".format(wordWidth))
-        myWord = raw_input("Guess : ")
-        myWord = myWord.strip()
-      b, c =  cowsAndBull(myWord, chosenWord)
-      print("|-- {0} bulls, {1} cows".format(b, c))
+        continue
+      if myWord in words :
+        cowsAndBull(myWord, chosenWord)
+      else :
+        print("This is not a valid word. Guess again.")
     else :
       print("The word is : {0}".format(chosenWord))
       sys.exit()
