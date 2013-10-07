@@ -21,6 +21,7 @@ yMax, xMax = stdscr.getmaxyx()
 mainWin = curses.newwin(4, 40, 0, 0)
 msgWinYOffset = 5
 msgWin = curses.newwin(xMax- msgWinYOffset, 40, msgWinYOffset, 0)
+tries = 0
 
 def initWindow() :
   global stdscr
@@ -48,17 +49,18 @@ def refreshBoxedWindow(window) :
 def putString(xloc, yloc, msg, window, overWrite=False) :
   if not overWrite :
     y , x = window.getyx()
-    window.addstr(y+1, x, msg)
-  window.addstr(xloc+1, yloc+1, msg)
+    window.addstr(y+1, 1,  msg)
+  else :
+    window.addstr(xloc+1, yloc+1, msg)
   refreshBoxedWindow(window)
 
 def printError(msg) :
   global stdscr 
   ymax, xmax = stdscr.getmaxyx()
-  width, height = 50, 4
+  width, height = 40, 4
   assert(ymax - height > 0)
   assert(xmax - width > 0) 
-  errorWin = curses.newwin(height, width,  (ymax - height)/2, (xmax - width)/2)
+  errorWin = curses.newwin(height, width,  0, 0)
   errorWin.box()
   errorWin.refresh()
   putString(0, 0, msg, errorWin, True)
@@ -68,6 +70,8 @@ def printError(msg) :
 
 def cowsAndBull(word, correctWord) :
   # bulls are no of letters on the same position in both words.
+  global msgWin
+  global mainWin 
   wordA = word
   wordB = correctWord
   assert len(wordA) == len(wordB)
@@ -86,7 +90,9 @@ def cowsAndBull(word, correctWord) :
   setA = set(wordA)
   setB = set(wordB)
   cows = setA.intersection(setB)
-  print("{2} has {0} bulls, {1} cows".format(bulls, len(cows), word))
+  msg = " {2} has {0} bulls, {1} cows".format(bulls, len(cows), word)
+  putString(1, 3, msg, msgWin)
+  
   
 
 if __name__ == "__main__" :
@@ -101,9 +107,9 @@ if __name__ == "__main__" :
     if(myWord != "????") :
       inputMsg = "Guess, you puny human : "
       putString(0, 0, inputMsg, mainWin, True)
+      msgWin.refresh()
       curses.echo()
       myWord = mainWin.getstr(1, len(inputMsg)) 
-      putString(1, 10, myWord, msgWin)
       myWord = myWord.strip()
       if(len(myWord) != wordWidth) :
         printError("ERROR: Not a {0} letter word. Try again.".format(wordWidth))
