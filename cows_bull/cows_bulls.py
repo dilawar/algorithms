@@ -86,26 +86,21 @@ def cowsAndBull(word, correctWord) :
   global msgWin
   global mainWin 
   global tries 
-  wordA = word
-  wordB = correctWord
-  assert len(wordA) == len(wordB)
+  bullsChars = []
   bulls = 0
   cows = 0
-  for i in range(0, len(wordA)-1) :
-    if wordA[i] == wordB[i] :
+  for i in range(0, len(word)-1) :
+    if word[i] == correctWord[i] :
       bulls += 1
-      if len(wordA) != i-1 :
-        wordA = wordA[:i] + wordA[i+1:]
-        wordB = wordB[:i] + wordB[i+1:]
-      else :
-        wordA = wordA[:-1]
-        wordA = wordB[:-1]
+      bullsChars.append(word[i])
     else : pass 
-  setA = set(wordA)
-  setB = set(wordB)
-  cows = setA.intersection(setB)
-  tries += 1
-  msg = " {2} : {0} bulls, {1} cows".format(bulls, len(cows), word)
+  setA = set(word)
+  setB = set(correctWord)
+  cowsSet = setA.intersection(setB)
+  for c in cowsSet :
+    if c in bullsChars : pass 
+    else : cows += 1
+  msg = " {2} : {0} bulls, {1} cows".format(bulls, cows, word)
   putString(len(word), len(word), msg, msgWin)
   
   
