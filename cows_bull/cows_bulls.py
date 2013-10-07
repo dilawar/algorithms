@@ -20,11 +20,12 @@ stdscr = curses.initscr()
 
 curses.start_color()
 
-curses.init_pair(1, curses.COLOR_RED, curses.COLOR_WHITE)
+curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
 headerWin = curses.newwin(4, 40, 0, 0)
-headerWin.addstr(1, 1, "Cows and bulls by Dilawar.\n ???? to ruin the fun"
-    , curses.color_pair(1))
 headerWin.box()
+headerWin.addstr(0, 2, "  Cows and bulls!")
+headerWin.addstr(1, 2, "  Type ???? to ruin the fun", curses.color_pair(1))
+headerWin.addstr(2, 2, "  Type xxxx to exit", curses.color_pair(1))
 headerWin.refresh()
 
 yMax, xMax = stdscr.getmaxyx()
@@ -65,6 +66,7 @@ def putString(xloc, yloc, msg, window, overWrite=False) :
     window.addstr(y+1, 1,  msg)
   else :
     window.addstr(xloc+1, yloc+1, msg)
+    window.clrtobot()
   refreshBoxedWindow(window)
 
 def printError(msg) :
@@ -75,7 +77,8 @@ def printError(msg) :
   assert(xmax - width > 0) 
   errorWin.box()
   errorWin.refresh()
-  putString(0, 0, msg, errorWin, True)
+  putString(0, 0, msg+". Press a key to continue", errorWin, True)
+  errorWin.refresh()
   errorWin.getch()
 
 def cowsAndBull(word, correctWord) :
