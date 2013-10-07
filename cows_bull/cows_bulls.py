@@ -17,10 +17,22 @@ import curses
 
 words = []
 stdscr = curses.initscr()
+
+curses.start_color()
+
+curses.init_pair(1, curses.COLOR_RED, curses.COLOR_WHITE)
+headerWin = curses.newwin(4, 40, 0, 0)
+headerWin.addstr(1, 1, "Cows and bulls by Dilawar.\n ???? to ruin the fun"
+    , curses.color_pair(1))
+headerWin.box()
+headerWin.refresh()
+
 yMax, xMax = stdscr.getmaxyx()
-mainWin = curses.newwin(4, 40, 0, 0)
-msgWinYOffset = 5
-msgWin = curses.newwin(xMax- msgWinYOffset, 40, msgWinYOffset, 0)
+mainWin = curses.newwin(4, 40, 3, 0)
+msgWinYOffset = 6
+msgWin = curses.newwin(yMax- msgWinYOffset , 40, msgWinYOffset, 0)
+width, height = 40, 4
+errorWin = curses.newwin(height, width,  3, 0)
 tries = 0
 
 def initWindow() :
@@ -40,7 +52,8 @@ def populateDB(wordLength) :
     allwords = f.read().split()
   for w in allwords :
     if len(w) == wordLength :
-      words.append(w)
+      if '\'' not in w :
+        words.append(w.lower())
 
 def refreshBoxedWindow(window) :
   window.box()
@@ -56,22 +69,20 @@ def putString(xloc, yloc, msg, window, overWrite=False) :
 
 def printError(msg) :
   global stdscr 
+  global mainWin, msgWin
   ymax, xmax = stdscr.getmaxyx()
-  width, height = 40, 4
   assert(ymax - height > 0)
   assert(xmax - width > 0) 
-  errorWin = curses.newwin(height, width,  0, 0)
   errorWin.box()
   errorWin.refresh()
   putString(0, 0, msg, errorWin, True)
   errorWin.getch()
-  del errorWin
-  stdscr.refresh()
 
 def cowsAndBull(word, correctWord) :
   # bulls are no of letters on the same position in both words.
   global msgWin
   global mainWin 
+  global tries 
   wordA = word
   wordB = correctWord
   assert len(wordA) == len(wordB)
@@ -90,8 +101,9 @@ def cowsAndBull(word, correctWord) :
   setA = set(wordA)
   setB = set(wordB)
   cows = setA.intersection(setB)
-  msg = " {2} has {0} bulls, {1} cows".format(bulls, len(cows), word)
-  putString(1, 3, msg, msgWin)
+  tries += 1
+  msg = " {2} : {0} bulls, {1} cows".format(bulls, len(cows), word)
+  putString(len(word), len(word), msg, msgWin)
   
   
 
@@ -107,8 +119,10 @@ if __name__ == "__main__" :
     if(myWord != "????") :
       inputMsg = "Guess, you puny human : "
       putString(0, 0, inputMsg, mainWin, True)
-      msgWin.refresh()
       curses.echo()
+      stdscr.touchwin()
+      msgWin.refresh()
+      mainWin.refresh()
       myWord = mainWin.getstr(1, len(inputMsg)) 
       myWord = myWord.strip()
       if(len(myWord) != wordWidth) :
@@ -116,8 +130,10 @@ if __name__ == "__main__" :
         continue
       if myWord in words :
         cowsAndBull(myWord, chosenWord)
-      else :
+      elif myWord != "????" :
         printError("This is not a valid word. Guess again.")
+        continue
+      else : continue 
     else :
       printError("The word is : {0}".format(chosenWord))
       curses.endwin()
