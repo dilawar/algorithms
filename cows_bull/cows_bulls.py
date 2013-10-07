@@ -13,8 +13,25 @@
 import sys
 import cmd
 from random import choice
+import curses
 
 words = []
+stdscr = curses.initscr()
+yMax, xMax = stdscr.getmaxyx()
+mainWin = curses.newwin(4, 40, 0, 0)
+msgWinYOffset = 5
+msgWin = curses.newwin(xMax- msgWinYOffset, 40, msgWinYOffset, 0)
+
+def initWindow() :
+  global stdscr
+  global mainWin, msgWin
+  curses.noecho()
+  stdscr.keypad(1)
+  curses.cbreak()
+  # intialize a window 
+  refreshBoxedWindow(mainWin)
+  refreshBoxedWindow(msgWin)
+  
 
 def populateDB(wordLength) :
   global words 
@@ -23,6 +40,31 @@ def populateDB(wordLength) :
   for w in allwords :
     if len(w) == wordLength :
       words.append(w)
+
+def refreshBoxedWindow(window) :
+  window.box()
+  window.refresh()
+
+def putString(xloc, yloc, msg, window, overWrite=False) :
+  if not overWrite :
+    y , x = window.getyx()
+    window.addstr(y+1, x, msg)
+  window.addstr(xloc+1, yloc+1, msg)
+  refreshBoxedWindow(window)
+
+def printError(msg) :
+  global stdscr 
+  ymax, xmax = stdscr.getmaxyx()
+  width, height = 50, 4
+  assert(ymax - height > 0)
+  assert(xmax - width > 0) 
+  errorWin = curses.newwin(height, width,  (ymax - height)/2, (xmax - width)/2)
+  errorWin.box()
+  errorWin.refresh()
+  putString(0, 0, msg, errorWin, True)
+  errorWin.getch()
+  del errorWin
+  stdscr.refresh()
 
 def cowsAndBull(word, correctWord) :
   # bulls are no of letters on the same position in both words.
@@ -48,24 +90,32 @@ def cowsAndBull(word, correctWord) :
   
 
 if __name__ == "__main__" :
+  initWindow()
   wordWidth = 4
   populateDB(wordWidth)
   # randomly select one word.
   chosenWord = choice(words)
   myWord = ''
+  
   while(chosenWord != myWord) :
     if(myWord != "????") :
-      myWord = raw_input("Guess a word : ")
+      inputMsg = "Guess, you puny human : "
+      putString(0, 0, inputMsg, mainWin, True)
+      curses.echo()
+      myWord = mainWin.getstr(1, len(inputMsg)) 
+      putString(1, 10, myWord, msgWin)
       myWord = myWord.strip()
       if(len(myWord) != wordWidth) :
-        print("ERROR: Not a {0} letter word. Try again.".format(wordWidth))
+        printError("ERROR: Not a {0} letter word. Try again.".format(wordWidth))
         continue
       if myWord in words :
         cowsAndBull(myWord, chosenWord)
       else :
-        print("This is not a valid word. Guess again.")
+        printError("This is not a valid word. Guess again.")
     else :
-      print("The word is : {0}".format(chosenWord))
+      printError("The word is : {0}".format(chosenWord))
+      curses.endwin()
       sys.exit()
-  print("Congrats! This was the correct word")
+  printError("Congrats! This was the correct word")
+  curses.endwin()
   
