@@ -128,6 +128,9 @@ if __name__ == "__main__" :
         continue
       if myWord in words :
         cowsAndBull(myWord, chosenWord)
+      elif myWord == "xxxx" :
+        curses.endwin()
+        sys.exit()
       elif myWord != "????" :
         printError("This is not a valid word. Guess again.")
         continue
