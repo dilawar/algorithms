@@ -50,8 +50,13 @@ buildW1 (x:xs) c (p:ps)
 
 
 callHangman :: Int -> [Char] -> [Char] -> Char -> IO ()
+-- This is the base case 
+callHangman n wrd wrd1 ' ' = do 
+    guess <- getChar
+    callHangman (n) wrd wrd1 guess
+    
 {- No attempt left, you are dead -}
-callHangman 0 wrd wrd1 c = do putStrLn "Dead" 
+callHangman 1 wrd wrd1 c = do putStrLn "Dead" 
 {- Attempts left, play on! -}
 callHangman n wrd wrd1 c 
     | ifContain wrd c = do 
@@ -61,11 +66,11 @@ callHangman n wrd wrd1 c
             then do
                   putStrLn "Well done!"
             else do
-                putStrLn ("Guess a char (Left " ++ (show n)++") : ")
+                putStrLn ("Guess a char (Left " ++ (show $ n)++") : ")
                 guess <- getChar
-                callHangman n wrd newWrd guess
+                callHangman (n) wrd newWrd guess
     | not (ifContain wrd c) = do
-        putStrLn ("Guess a char (Left " ++ (show n)++") : ")
+        putStrLn (show c ++ " is not in word. (Left " ++ (show $ n-1)++") : ")
         guess <- getChar
         callHangman (n-1) wrd wrd1 guess
     | otherwise = error "Something wrong in logic."
