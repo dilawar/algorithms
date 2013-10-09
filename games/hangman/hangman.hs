@@ -52,6 +52,7 @@ buildW1 (x:xs) c (p:ps)
 callHangman :: Int -> [Char] -> [Char] -> Char -> IO ()
 -- This is the base case 
 callHangman n wrd wrd1 ' ' = do 
+    putStr ("Guess (Left " ++ (show $ n)++")  : ")
     guess <- getChar
     callHangman (n) wrd wrd1 guess
     
@@ -61,16 +62,16 @@ callHangman 1 wrd wrd1 c = do putStrLn "Dead"
 callHangman n wrd wrd1 c 
     | ifContain wrd c = do 
         let newWrd = addGuessToWord wrd wrd1 c
-        putStrLn (" --> " ++ (show newWrd))
+        putStrLn ("\t Your progress : " ++ (show newWrd) ++ "\n")
         if wrd == newWrd
             then do
                   putStrLn "Well done!"
             else do
-                putStrLn ("Guess a char (Left " ++ (show $ n)++") : ")
+                putStr ("Guess (Left " ++ (show $ n)++")  : ")
                 guess <- getChar
                 callHangman (n) wrd newWrd guess
     | not (ifContain wrd c) = do
-        putStrLn (show c ++ " is not in word. (Left " ++ (show $ n-1)++") : ")
+        putStr ("\n"++ "Wrong (Left " ++ (show $ n-1)++")  : ")
         guess <- getChar
         callHangman (n-1) wrd wrd1 guess
     | otherwise = error "Something wrong in logic."
@@ -80,7 +81,11 @@ main = do
     words <- readFile "./words"
     word <- randomWord words 
     let n = (length word)
-    putStrLn $ "Hangman I have a word of length "++show n++" in my mind."
+    putStrLn $ "+------------------------------------------------------+"
+    putStrLn $ "|          GAME OF HANGMAN (IIT Bombay)                |"
+    putStrLn $ "+------------------------------------------------------+"
+    putStrLn ""
+    putStrLn $ "HANGMAN: I have a word of length "++show n++" in my mind!"
     let emptyWrd = foldr(\x->('_':)) [] word --create a masked copy of word.
     putStrLn $ emptyWrd++"\n"
     callHangman (n+1) word emptyWrd ' ' -- dummy call to start the game.
