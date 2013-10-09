@@ -57,7 +57,7 @@ callHangman n wrd wrd1 ' ' = do
     callHangman (n) wrd wrd1 guess
     
 {- No attempt left, you are dead -}
-callHangman 1 wrd wrd1 c = do putStrLn "Dead" 
+callHangman 0 wrd wrd1 c = do putStrLn $ "Dead." ++ "Word was : " ++ wrd  
 {- Attempts left, play on! -}
 callHangman n wrd wrd1 c 
     | ifContain wrd c = do 
