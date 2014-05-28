@@ -17,16 +17,13 @@ getAP txt = createTables $ map pairUp values
         values = map (\x -> map (\y -> read y :: Float) $ splitOneOf " ,;" x) lines
         lines = splitOn "\n" txt
 
-createTables vs 
-    | length vs == 0 = []
-    | otherwise = foldl intoTables' emptyTables vs
+createTables vs = foldl intoTables' emptyTables vs
     where
         emptyTables = map (\y -> [] ) (head vs)
-
-intoTables' [] [] = []
-intoTables' (c:cs) (a:as) = (c ++ [a]) : intoTables' cs as
-intoTables' x y = error $ "Error. Tables " ++ (show x) ++ " : elems " ++ (show y)
-
+        intoTables' [] [] = []
+        intoTables' (c:cs) (a:as) = (c ++ [a]) : intoTables' cs as
+        -- Sometime we might get an empty list as element. Ignore it
+        intoTables' x [] = x
 
 -- Pair up first element of list with rest of the list. For example, 
 -- pairUp [1, 2, 3] = [ (1, 2), (1, 3) ]
