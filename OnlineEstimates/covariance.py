@@ -35,6 +35,7 @@ def main():
     #data = np.random.sample(1e6)
     #data = np.random.random_integers(0, 1000, 1e6)
     data = np.random.normal(0.0, 1e-5, 1e6)
+    data = data + 1e11
     variance = online_estimate(data)
     print("Online estimate is: %s" % variance)
     variance = data.var()
