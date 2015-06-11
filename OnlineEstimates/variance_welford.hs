@@ -4,7 +4,12 @@
 import Data.List as L
 import System.Random
 
-{-online_single_pass (l1:l2:ls) = compute ls ((l1*l1+l2*l2)/2) 0.0 0 where -}
+mean :: Fractional a => [a] -> a
+mean xs = (sum xs) / (fromIntegral $ length xs)
+
+variance ls = mean $ map (\x -> (x - u)^2) ls 
+    where u = mean ls
+
 online_single_pass :: Fractional a => [a] -> a
 online_single_pass (l:ls) = compute ls l l 1 where
         compute (x:xs) sos mean n 
@@ -26,7 +31,9 @@ main = do
     seed <- newStdGen
     {-let d = randoms seed :: [Double]-}
     let d = take 20 [1.0,3.5..]
+    let var0 = variance d
     let var1 = online_single_pass  d
     let var2 = welford d
-    print $ "Two pass: " ++ show var1
+    print $ "Variance: " ++ show var0
+    print $ "Single pass: " ++ show var1
     print $ "Welford: " ++ show var2
