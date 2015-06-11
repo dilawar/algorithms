@@ -15,18 +15,18 @@ online_single_pass (l:ls) = compute ls l l 1 where
                 u = (n*mean + x)/(n+1)
 
 welford :: Fractional a => [a] -> a
-welford (x1:x2:xs) = helper xs 0.0 ((x1+x2)/2) 3 where
+welford (x1:xs) = helper xs 0.0 x1 2 where
     helper (y:ys) var mean n 
-        | null ys = var 
+        | null ys = newvar 
         | otherwise = helper ys newvar newmean (n+1) where 
             newmean = ((n-1)*mean + y) / n
-            newvar = (y - mean)*(y - newmean) / (n-1)
+            newvar = ((n-1)*var + (y - mean)*(y - newmean)) / n
 
 main = do
     seed <- newStdGen
     {-let d = randoms seed :: [Double]-}
-    let d = [1.0,2.0..10.0]
-    let var1 = online_single_pass $ take 1000000 d
-    let var2 = welford $ take 1000000 d
+    let d = take 20 [1.0,3.5..]
+    let var1 = online_single_pass  d
+    let var2 = welford d
     print $ "Two pass: " ++ show var1
     print $ "Welford: " ++ show var2
