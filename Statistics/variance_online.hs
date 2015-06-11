@@ -29,10 +29,9 @@ welford (x1:xs) = helper xs 0.0 x1 2 where
 
 main = do
     seed <- newStdGen
-    {-let d = randoms seed :: [Double]-}
-    let d = take 20 [1.0,3.5..]
+    let d = take 1000000 $ randoms seed :: [Double]
     let var0 = variance d
-    let var1 = online_single_pass  d
+    let var1 = online_single_pass d
     let var2 = welford d
     print $ "Variance: " ++ show var0
     print $ "Single pass: " ++ show var1
