@@ -9,4 +9,4 @@ else
     HSRUN="+RTS -K100M"
 fi
 ghc $HSFLAGS ./variance_online.hs 
-./variance_online $HSRUN -RTS
+time ./variance_online $HSRUN -RTS
