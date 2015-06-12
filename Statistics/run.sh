@@ -1,5 +1,12 @@
 #!/bin/bash
 set -e
 set -x
-ghc -O3 -prof -rtsopts ./variance_online.hs 
-./variance_online +RTS -K100M -p -RTS
+if [[ "$1" == "prof" ]]; then
+    HSFLAGS="-rtsopts -prof -O3"
+    HSRUN="+RTS -K100M -p"
+else
+    HSFLAGS="-rtsopts -O3"
+    HSRUN="+RTS -K100M"
+fi
+ghc $HSFLAGS ./variance_online.hs 
+./variance_online $HSRUN -RTS
