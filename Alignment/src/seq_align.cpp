@@ -14,6 +14,7 @@
  */
 
 #include "seq_align.h"
+#include <string>
 
 SeqAlign::SeqAlign()
 {
@@ -21,4 +22,10 @@ SeqAlign::SeqAlign()
 
 SeqAlign::~SeqAlign()
 {
+}
+
+void SeqAlign::set_strings(string a, string b)
+{
+    a_ = a;
+    b_ = b;
 }

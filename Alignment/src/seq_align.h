@@ -26,8 +26,12 @@ class SeqAlign
         SeqAlign();
         ~SeqAlign();
 
+        void set_strings(string a, string b);
+
     private:
         /* data */
+
+    public:
         string a_;
         string b_;
 };

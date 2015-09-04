@@ -1,3 +1,3 @@
 from seq_align import PySeqAlign
 a = PySeqAlign("lalalal", "dada")
-print a
+print a.a, a.b

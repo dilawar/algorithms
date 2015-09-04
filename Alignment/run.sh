@@ -1,2 +1,4 @@
 #!/bin/bash
-python setup.py build --in-place
+set -e
+python setup.py build_ext --inplace
+python test.py
