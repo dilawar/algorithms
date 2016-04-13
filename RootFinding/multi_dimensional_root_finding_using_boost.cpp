@@ -20,6 +20,7 @@
 #include <iostream>
 #include <sstream>
 #include <array>
+#include <iomanip>
 #include <functional>
 
 
@@ -36,35 +37,48 @@ public:
     typedef std::array<value_type, SystemSize> vector_type;
     typedef std::array<vector_type, SystemSize> matrix_type;
 
-    typedef function<value_type( void )> equation_type;
+    typedef function<value_type( const vector_type&  )> equation_type;
 
     NonlinearSystem( ) {}
 
     NonlinearSystem( const vector_type& x) : state( x )
     {
-        auto eq0 = [this]( ) { 
-            return 1.0 * (1.0 - state[0]);
+        auto eq0 = [this]( const vector_type& y ) { 
+            return 1.0 * (1.0 - y[0]);
         };
-        auto eq1 = [this]() {
-            return 10 * ( state[1] - state[0] * state[0]);
+        auto eq1 = [this]( const vector_type& y ) {
+            return 10 * ( y[1] - y[0] * y[0]);
         };
         system[0] = eq0;
         system[1] = eq1;
     }
 
 
-    vector_type apply(const vector_type& x)
+    vector_type compute_at(const vector_type& x)
     {
         iter += 1;
-        state[0] = system[0]();
-        state[1] = system[1]();
-        return state;
+        vector_type result;
+        result[0] = system[0](x);
+        result[1] = system[1](x);
+        return result;
+    }
+
+    void apply( const vector_type& x)
+    {
+        state = compute_at( x );
     }
 
     void compute_jacobian( )
     {
         double step = 0.001;
-    
+        for( size_t i = 0; i < SystemSize; i++)
+            for( size_t j = 0; j < SystemSize; j++)
+            {
+                vector_type temp = state;
+                temp[j] += step;
+                value_type dvalue = (system[i]( temp ) - system[i]( state ))/ step;
+                jacobian[i][j] = dvalue;
+            }
     }
 
     string to_string( )
@@ -73,6 +87,13 @@ public:
 
         ss << "Iter: " << iter << " State: ";
         for ( auto v : state ) ss << v << ",";
+        ss << endl << "Jacobian " << endl;
+        for( auto v : jacobian )
+        {
+            for( auto vv : v )
+                ss << setw(5) << vv;
+            ss << endl;
+        }
 
         return ss.str();
     }
@@ -83,7 +104,7 @@ public:
      */
     std::array< equation_type, SystemSize > system;
     vector_type state;
-    matrix_type jacobian;
+    matrix_type jacobian = {0};
     size_t iter = 0;
     const size_t size = SystemSize;
 };
@@ -98,6 +119,8 @@ void find_roots( NonlinearSystem<N>& sys
 {
     cout << sys.to_string( ) << endl;
     sys.apply( sys.state );
+    cout << sys.to_string( ) << endl;
+    sys.compute_jacobian();
     cout << sys.to_string( ) << endl;
 
 }
