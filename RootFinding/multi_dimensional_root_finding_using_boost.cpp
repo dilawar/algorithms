@@ -17,10 +17,11 @@
  * =====================================================================================
  */
 
-#include <boost/math/tools/roots.hpp>
 #include <iostream>
 #include <sstream>
 #include <array>
+#include <functional>
+
 
 using namespace std;
 
@@ -32,22 +33,38 @@ class NonlinearSystem
 {
 public:
 
-    typedef std::array<value_type, SystemSize> state_type;
+    typedef std::array<value_type, SystemSize> vector_type;
+    typedef std::array<vector_type, SystemSize> matrix_type;
 
-    typedef function<value_type(const state_type&)> equation_type;
+    typedef function<value_type( void )> equation_type;
 
     NonlinearSystem( ) {}
 
-    NonlinearSystem( const state_type& x) : state( x )
+    NonlinearSystem( const vector_type& x) : state( x )
     {
+        auto eq0 = [this]( ) { 
+            return 1.0 * (1.0 - state[0]);
+        };
+        auto eq1 = [this]() {
+            return 10 * ( state[1] - state[0] * state[0]);
+        };
+        system[0] = eq0;
+        system[1] = eq1;
     }
 
-    state_type apply(const state_type& x)
+
+    vector_type apply(const vector_type& x)
     {
         iter += 1;
-        state[0] = 1.0 * (1.0 - x[0]);
-        state[1] = 10 * ( x[1] - x[0] * x[0]);
+        state[0] = system[0]();
+        state[1] = system[1]();
         return state;
+    }
+
+    void compute_jacobian( )
+    {
+        double step = 0.001;
+    
     }
 
     string to_string( )
@@ -64,8 +81,9 @@ public:
      * @brief Stores the equations of system in an array. Each equation is a
      * lambda expression.
      */
-    array< equation_type, SystemSize > system;
-    state_type state;
+    std::array< equation_type, SystemSize > system;
+    vector_type state;
+    matrix_type jacobian;
     size_t iter = 0;
     const size_t size = SystemSize;
 };
@@ -75,7 +93,7 @@ void find_roots( NonlinearSystem<N>& sys
         , const value_type& a
         , const value_type& b
         , unsigned int eps_tolerance = 30
-        , boost::uintmax_t max_iter = 100
+        , size_t max_iter = 100
         )
 {
     cout << sys.to_string( ) << endl;
