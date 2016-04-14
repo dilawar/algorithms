@@ -19,19 +19,45 @@
 
 #include <iostream>
 #include <sstream>
-#include <array>
-#include <iomanip>
 #include <functional>
+#include <iomanip>
+
+// Boost ublas library of matrix algebra.
 #include <boost/numeric/ublas/matrix.hpp>
+#include <boost/numeric/ublas/lu.hpp>
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/io.hpp>
-
-
 
 using namespace std;
 using namespace boost::numeric;
 
 typedef double value_type;
+
+
+/* Matrix inversion routine.
+   Uses lu_factorize and lu_substitute in uBLAS to invert a matrix */
+template<class T>
+bool inverse(const ublas::matrix<T>& input, ublas::matrix<T>& inverse) 
+{
+    using namespace boost::numeric::ublas;
+    typedef permutation_matrix<std::size_t> pmatrix;
+    // create a working copy of the input
+    matrix<T> A(input);
+    // create a permutation matrix for the LU-factorization
+    pmatrix pm(A.size1());
+
+    // perform LU-factorization
+    int res = lu_factorize(A,pm);
+    if( res != 0 ) return false;
+
+    // create identity matrix of "inverse"
+    inverse.assign(ublas::identity_matrix<T>(A.size1()));
+
+    // backsubstitute to get the inverse
+    lu_substitute(A, pm, inverse);
+
+    return true;
+}
 
 // A sysmte of non-linear equations. Store the values in result.
 template< size_t SystemSize>
@@ -53,6 +79,7 @@ public:
     {
         state.resize( SystemSize, 0);
         jacobian.resize( SystemSize, SystemSize, 0);
+        invJacobian.resize( SystemSize, SystemSize, 0);
 
         auto eq0 = [this]( const vector_type& y ) { 
             return 1.0 * (1.0 - y[0]);
@@ -67,7 +94,6 @@ public:
 
     vector_type compute_at(const vector_type& x)
     {
-        iter += 1;
         vector_type result(SystemSize);
         result[0] = system[0](x);
         result[1] = system[1](x);
@@ -81,25 +107,30 @@ public:
 
     void compute_jacobian( )
     {
-        double step = 0.001;
+        double step = 0.0001;
         for( size_t i = 0; i < SystemSize; i++)
             for( size_t j = 0; j < SystemSize; j++)
             {
                 vector_type temp = state;
-                cerr << i << "," << j << endl;
                 temp[j] += step;
                 value_type dvalue = (system[i]( temp ) - system[i]( state ))/ step;
                 jacobian(i, j) = dvalue;
             }
+
+        // Keep the inverted jacobian ready
+        inverse( jacobian, invJacobian );
     }
 
     string to_string( )
     {
         stringstream ss;
 
-        ss << "Iter: " << iter << " State: ";
-        for ( auto v : state ) ss << v << ",";
-        ss << endl << "Jacobian: " << jacobian << endl;
+        ss << "=======================================================";
+        ss << endl << setw(25) << "State of system: " << ( state );
+        ss << endl << setw(25) << "Value of system: " << compute_at( state );
+        ss << endl << setw(25) << "Jacobian: " << jacobian;
+        ss << endl << setw(25) << "Inverse Jacobian: " << invJacobian;
+        ss << endl;
         return ss.str();
     }
 
@@ -110,7 +141,7 @@ public:
     std::array< equation_type, SystemSize > system;
     vector_type state;
     matrix_type jacobian;
-    size_t iter = 0;
+    matrix_type invJacobian;
     const size_t size = SystemSize;
 };
 
@@ -122,11 +153,22 @@ void find_roots( NonlinearSystem<N>& sys
         , size_t max_iter = 100
         )
 {
-    cout << sys.to_string( ) << endl;
-    sys.apply( sys.state );
-    cout << sys.to_string( ) << endl;
+    double tolerance = 1e-20;
     sys.compute_jacobian();
-    cout << sys.to_string( ) << endl;
+    double norm2OfDiff = 1.0;
+    size_t iter = 0;
+    while( norm2OfDiff > tolerance && iter <= max_iter)
+    {
+        iter += 1;
+        ublas::vector<value_type> s = sys.state -
+            ublas::prod( sys.invJacobian, sys.compute_at( sys.state) );
+        norm2OfDiff = ublas::norm_2(s - sys.state);
+        sys.state = s;
+    }
+
+    cerr << "[INFO] Finished computing zeros in " << iter << " steps " << endl;
+    cerr << "[INFO] System at this state " << endl;
+    cerr << sys.to_string();
 }
 
 int main( )
