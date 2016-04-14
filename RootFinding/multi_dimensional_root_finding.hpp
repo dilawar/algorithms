@@ -154,8 +154,18 @@ public:
         return ss.str();
     }
 
-    bool find_roots( 
-            double tolerance = 1e-10
+
+    /**
+     * @brief Find roots using Newton-Raphson method.
+     *
+     * @param tolerance  Default to 1e-12
+     * @param max_iter  Maximum number of iteration allowed , default 100
+     *
+     * @return  If successful, return true. Check the variable `argument` at
+     * which the system value is close to zero (within  the tolerance).
+     */
+    bool find_roots_gnewton( 
+            double tolerance = 1e-12
             , size_t max_iter = 100
             )
     {
