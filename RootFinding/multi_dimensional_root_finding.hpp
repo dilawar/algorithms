@@ -32,7 +32,9 @@ using namespace std;
 using namespace boost::numeric;
 
 typedef double value_type;
-
+typedef ublas::vector<value_type> vector_type;
+typedef ublas::matrix<value_type> matrix_type;
+typedef function<value_type( const vector_type&  )> equation_type;
 
 /* Matrix inversion routine.
    Uses lu_factorize and lu_substitute in uBLAS to invert a matrix */
@@ -65,30 +67,31 @@ class NonlinearSystem
 {
 public:
 
-    typedef ublas::vector<value_type> vector_type;
-    typedef ublas::matrix<value_type> matrix_type;
-
-    typedef function<value_type( const vector_type&  )> equation_type;
 
     NonlinearSystem( ) 
     {
-
-    }
-
-    NonlinearSystem( const vector_type& x) : state( x )
-    {
-        state.resize( SystemSize, 0);
+        value.resize( SystemSize, 0);
         jacobian.resize( SystemSize, SystemSize, 0);
         invJacobian.resize( SystemSize, SystemSize, 0);
+    }
 
-        auto eq0 = [this]( const vector_type& y ) { 
-            return 1.0 * (1.0 - y[0]);
-        };
-        auto eq1 = [this]( const vector_type& y ) {
-            return 10 * ( y[1] - y[0] * y[0]);
-        };
-        system[0] = eq0;
-        system[1] = eq1;
+    /**
+     * @brief Assign a std::function as equation of system.
+     *
+     * @param eq  std::function 
+     * @param index Which equation of system.
+     */
+    void assign_equation( const equation_type& eq, size_t index)
+    {
+        if( index >= SystemSize )
+        {
+            cerr << "Fatal: This system is initialized with " << SystemSize 
+                << " equations. " << endl;
+            cerr << "|| You are trying to assign at index " << index << endl;
+            exit(1);
+        }
+
+        system[index] = eq;
     }
 
 
@@ -100,25 +103,42 @@ public:
         return result;
     }
 
-    void apply( const vector_type& x)
+    void compute_jacobian( const vector_type& x )
     {
-        state = compute_at( x );
-    }
 
-    void compute_jacobian( )
-    {
+#ifdef  DEBUG
+        cout  << "Debug: computing jacobian at " << x << endl;
+#endif     /* -----  not DEBUG  ----- */
         double step = 0.0001;
         for( size_t i = 0; i < SystemSize; i++)
             for( size_t j = 0; j < SystemSize; j++)
             {
-                vector_type temp = state;
+                vector_type temp = x;
                 temp[j] += step;
-                value_type dvalue = (system[i]( temp ) - system[i]( state ))/ step;
+                value_type dvalue = (system[i]( temp ) - system[i]( x ))/ step;
                 jacobian(i, j) = dvalue;
             }
 
         // Keep the inverted jacobian ready
         inverse( jacobian, invJacobian );
+
+#ifdef  DEBUG
+        cout  << "Debug: " << to_string( ) << endl;
+#endif     /* -----  not DEBUG  ----- */
+    }
+
+    template<typename T>
+    void initialize( const T& x )
+    {
+        vector_type init;
+        init.resize(SystemSize, 0);
+
+        for( size_t i = 0; i < SystemSize; i++)
+            init[i] = x[i];
+
+        argument = init;
+        value = compute_at( init );
+        compute_jacobian( init );
     }
 
     string to_string( )
@@ -126,64 +146,55 @@ public:
         stringstream ss;
 
         ss << "=======================================================";
-        ss << endl << setw(25) << "State of system: " << ( state );
-        ss << endl << setw(25) << "Value of system: " << compute_at( state );
+        ss << endl << setw(25) << "State of system: " ;
+        ss << " Argument: " << argument << " Value : " << value;
         ss << endl << setw(25) << "Jacobian: " << jacobian;
         ss << endl << setw(25) << "Inverse Jacobian: " << invJacobian;
         ss << endl;
         return ss.str();
     }
 
+    bool find_roots( 
+            double tolerance = 1e-10
+            , size_t max_iter = 100
+            )
+    {
+        double norm2OfDiff = 1.0;
+        size_t iter = 0;
+        while( ublas::norm_2(value) > tolerance and iter <= max_iter)
+        {
+            compute_jacobian( argument );
+            iter += 1;
+            value = compute_at( argument );
+            ublas::vector<value_type> s = argument - ublas::prod( invJacobian, value );
+#ifdef DEUBG
+            cerr << "Previous " << argument << " Next : " << s << endl;
+#endif
+            argument = s;
+        }
+
+        if( iter > max_iter )
+        {
+            cerr << "[WARN] Could not find roots of system." << endl;
+            cerr <<  "\tTried " << iter << " times." << endl;
+            cerr << "\tIteration limits reached" << endl;
+            return false;
+        }
+
+        cerr << "Info: Computed roots succesfully in " << iter 
+            << " iterations " << endl;
+        return true;
+    }
+
+
     /**
      * @brief Stores the equations of system in an array. Each equation is a
      * lambda expression.
      */
     std::array< equation_type, SystemSize > system;
-    vector_type state;
+    vector_type value;
+    vector_type argument;
     matrix_type jacobian;
     matrix_type invJacobian;
     const size_t size = SystemSize;
 };
-
-template< size_t N >
-void find_roots( NonlinearSystem<N>& sys 
-        , const value_type& a
-        , const value_type& b
-        , unsigned int eps_tolerance = 30
-        , size_t max_iter = 100
-        )
-{
-    double tolerance = 1e-20;
-    sys.compute_jacobian();
-    double norm2OfDiff = 1.0;
-    size_t iter = 0;
-    while( norm2OfDiff > tolerance && iter <= max_iter)
-    {
-        iter += 1;
-        ublas::vector<value_type> s = sys.state -
-            ublas::prod( sys.invJacobian, sys.compute_at( sys.state) );
-        norm2OfDiff = ublas::norm_2(s - sys.state);
-        sys.state = s;
-    }
-
-    cerr << "[INFO] Finished computing zeros in " << iter << " steps " << endl;
-    cerr << "[INFO] System at this state " << endl;
-    cerr << sys.to_string();
-}
-
-int main( )
-{
-    cerr << "This program computes the root of system described here "
-        << "https://Filenamew.gnu.org/software/gsl/manual/html_node/Example-programs-for-Multidimensional-Root-finding.html#Example-programs-for-Multidimensional-Root-finding"
-        << endl;
-
-    const size_t systemSize = 2;
-    ublas::vector<double> init( systemSize );
-    init[0] = 2.0;
-    init[1] = 10.0;
-
-    NonlinearSystem<systemSize> sys(init);
-    find_roots<systemSize>(sys, 1.0, 2.0);
-
-    return 0;
-}
