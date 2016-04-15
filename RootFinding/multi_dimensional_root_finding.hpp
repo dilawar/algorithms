@@ -21,6 +21,8 @@
 #include <sstream>
 #include <functional>
 #include <iomanip>
+#include <limits>
+
 
 // Boost ublas library of matrix algebra.
 #include <boost/numeric/ublas/matrix.hpp>
@@ -109,7 +111,7 @@ public:
 #ifdef  DEBUG
         cout  << "Debug: computing jacobian at " << x << endl;
 #endif     /* -----  not DEBUG  ----- */
-        double step = 0.0001;
+        double step = 1e-8;
         for( size_t i = 0; i < SystemSize; i++)
             for( size_t j = 0; j < SystemSize; j++)
             {
