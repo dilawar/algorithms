@@ -63,6 +63,28 @@ int main( )
     sys.find_roots_gnewton( );
     cout << sys.to_string() << endl;
 
+    cerr << " A system with 3-dimen" << endl;
+    NonlinearSystem<3> sys3;
+    equation_type e1 = []( const vector_type& x) {
+        return 3*x[0] - cos( x[1] * x[2] ) - 1.5;
+    };
+    equation_type e2 = []( const vector_type& x) {
+        return 4*x[0]*x[0] - 625* x[1] * x[1] + 2*x[1]- 1;
+    };
+    equation_type e3 = []( const vector_type& x) {
+        return exp(- x[0] * x[1]) + 20 * x[2] + (31.1416 - 3)/3 ;
+    };
+
+    sys3.assign_equation( e1, 0 );
+    sys3.assign_equation( e2, 1 );
+    sys3.assign_equation( e3, 2 );
+
+    array< double, 3> init3 = {{ 0.0, 0.0, 0.0 }};
+    sys3.initialize( init3 );
+
+    sys3.find_roots_gnewton( );
+    cout  << sys3.to_string() << endl;
+
     return 0;
 }
 
