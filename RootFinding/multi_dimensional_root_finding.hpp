@@ -22,6 +22,7 @@
 #include <functional>
 #include <iomanip>
 #include <limits>
+#include <array>
 
 
 // Boost ublas library of matrix algebra.
@@ -111,7 +112,6 @@ public:
 #ifdef  DEBUG
         cout  << "Debug: computing jacobian at " << x << endl;
 #endif     /* -----  not DEBUG  ----- */
-        double step = 1e-8;
         for( size_t i = 0; i < SystemSize; i++)
             for( size_t j = 0; j < SystemSize; j++)
             {
@@ -171,7 +171,6 @@ public:
             , size_t max_iter = 100
             )
     {
-        double norm2OfDiff = 1.0;
         size_t iter = 0;
         while( ublas::norm_2(value) > tolerance and iter <= max_iter)
         {
@@ -208,5 +207,6 @@ public:
     vector_type argument;
     matrix_type jacobian;
     matrix_type invJacobian;
+    double step = sqrt(numeric_limits<double>::epsilon());
     const size_t size = SystemSize;
 };

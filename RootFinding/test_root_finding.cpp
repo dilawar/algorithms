@@ -85,6 +85,10 @@ int main( )
     sys3.find_roots_gnewton( );
     cout  << sys3.to_string() << endl;
 
+    // Another system
+    NonlinearSystem<2> sA;
+    
+
     return 0;
 }
 
