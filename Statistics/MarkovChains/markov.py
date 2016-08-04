@@ -46,7 +46,12 @@ class MarkovChain():
             self.T = np.matrix( mat_or_string )
 
         self.N = self.T.shape[0]
-        assert np.sum( self.T ) == self.N, 'Invalid transition matrix'
+        if abs( np.sum( self.T ) - self.N) >= 1e-7:
+            print( '[ERROR] Invalid transition matrix' )
+            print( '\tExpect sum %f, got %f' % (self.N, np.sum( self.T ) ) )
+            print( self.T )
+            quit( )
+
         assert np.allclose( np.sum( self.T , axis = 1), np.ones( self.N )), 'Invalid transition matrix'
 
     def find_steady_state( self, method = 'analytic',  max_iterations = 1000 ):
@@ -111,9 +116,12 @@ class MarkovChain():
 
 
 def main( args ):
-    # mc = MarkovChain( '0 1/3 2/3; 0 0 1; 1 0 0' )
     mc = MarkovChain( args.transitions )
-    mc.find_steady_state( )
+    print( '[INFO] Transition matrix ' )
+    print( mc.T )
+    stationary = mc.find_steady_state( )
+    print( '[RESULT] Stationary distribution' )
+    print( stationary )
     mc.to_graph( )
     if args.simulate > 0:
         mc.simulate( args.simulate )
