@@ -36,7 +36,6 @@ class MarkovChain():
             rows = filter(None, mat_or_string.split(';'))
             self.N = len(rows)
             self.T = np.zeros( shape=( self.N, self.N) )
-            print self.T
             for i, r in enumerate(rows):
                 # Trick to avoid 1/3 evaluated to 0
                 r = [ eval( compile(
@@ -60,7 +59,6 @@ class MarkovChain():
         if not np.allclose( np.sum( self.T , axis = 1), np.ones( self.N )):
             print( '[ERR] Invalid transition matrix. Each row must add up to 1' )
             print( '\t I constructed: %s' % self.T )
-            quit( )
 
     def find_steady_state( self, method = 'analytic',  max_iterations = 1000 ):
         # There are two ways in which one can do that. 
