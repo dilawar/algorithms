@@ -33,26 +33,34 @@ class MarkovChain():
 
     def init_transition_matrix( self, mat_or_string ):
         if isinstance( mat_or_string, str ):
-            rows = []
-            rs = mat_or_string.split( ';' )
-            for r in rs:
+            rows = filter(None, mat_or_string.split(';'))
+            self.N = len(rows)
+            self.T = np.zeros( shape=( self.N, self.N) )
+            print self.T
+            for i, r in enumerate(rows):
                 # Trick to avoid 1/3 evaluated to 0
                 r = [ eval( compile(
                     x, '<string>', 'eval', __future__.division.compiler_flag
                     )) for x in r.split( ) ]
-                rows.append( r )
-            self.T = np.vstack( rows )
+                if( np.sum( r ) > 1.0):
+                    print( "[ERR] A row can not add up to more than 1.0" )
+                    print( "\tRow was %s" % r )
+                    quit( )
+                r.insert( i, 1.0 - np.sum( r ) )
+                self.T[i] = r 
         else:
             self.T = np.matrix( mat_or_string )
 
-        self.N = self.T.shape[0]
         if abs( np.sum( self.T ) - self.N) >= 1e-7:
             print( '[ERROR] Invalid transition matrix' )
             print( '\tExpect sum %f, got %f' % (self.N, np.sum( self.T ) ) )
             print( self.T )
             quit( )
 
-        assert np.allclose( np.sum( self.T , axis = 1), np.ones( self.N )), 'Invalid transition matrix'
+        if not np.allclose( np.sum( self.T , axis = 1), np.ones( self.N )):
+            print( '[ERR] Invalid transition matrix. Each row must add up to 1' )
+            print( '\t I constructed: %s' % self.T )
+            quit( )
 
     def find_steady_state( self, method = 'analytic',  max_iterations = 1000 ):
         # There are two ways in which one can do that. 
@@ -113,8 +121,6 @@ class MarkovChain():
                 nextS = np.random.choice( otherStates, p = probs )
                 print nextS
 
-
-
 def main( args ):
     mc = MarkovChain( args.transitions )
     print( '[INFO] Transition matrix ' )
@@ -126,8 +132,6 @@ def main( args ):
     if args.simulate > 0:
         mc.simulate( args.simulate )
 
-
-
 if __name__ == '__main__':
     import argparse
     # Argument parser.
@@ -136,7 +140,8 @@ if __name__ == '__main__':
     parser.add_argument('--transitions', '-t'
         , required = True
         , type = str
-        , help = 'Transition matrix'
+        , help = 'Transitions. It has N-1 entries for each state.'
+                 ' States are separated by character ;'
         )
     parser.add_argument('--output', '-o'
         , required = False
