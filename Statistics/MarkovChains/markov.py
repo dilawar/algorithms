@@ -29,6 +29,7 @@ class MarkovChain():
         self.init_transition_matrix( T )
         # size of the system
         self.N = self.T.shape[0]
+        self.G = None
 
     def init_transition_matrix( self, mat_or_string ):
         if isinstance( mat_or_string, str ):
@@ -75,26 +76,48 @@ class MarkovChain():
         return np.linalg.solve( a, b )
 
     def to_graph( self ):
-        print self.T
-        graph = nx.DiGraph( self.T )
+        self.G = nx.DiGraph( self.T )
         outfile = 'transition_graph.dot'
-        nx.write_dot( graph, outfile )
+        nx.write_dot( self.G, outfile )
+        # nx.write_dot( graph, sys.stdout )
         print( '[INFO] Wrote graphviz file to %s' % outfile )
         return 0
         try:
-            nx.draw_graphviz( graph, 'dot' )
+            nx.draw_graphviz( self.G, 'dot' )
         except Exception as e:
             print( "Can't draw using graphviz %s" % e )
-            nx.draw_networkx( graph )
-        plt.show( )
+            nx.draw_networkx( self.G )
+        # plt.show( )
+
+    def simulate( self, steps = 1000 ):
+        allStates = range( self.N )
+        states = [ np.random.choice( range( self.N ) ) ]
+        rands = np.random.uniform( 0.0, 1.0, steps )
+        for r in rands:
+            currS = states[-1]
+            otherStates = allStates.remove( currS )
+            if r <= self.T[currS,currS]:
+                # Remain here
+                states.append( currS )
+            else:
+                # move to other state
+                probs = self.T[currS,:currS] + self.T[currS,currS:]
+                print probs
+                probs = probs / np.linalg.norm( probs, 1 )
+                print probs
+                nextS = np.random.choice( otherStates, p = probs )
+                print nextS
 
 
 
 def main( args ):
     # mc = MarkovChain( '0 1/3 2/3; 0 0 1; 1 0 0' )
     mc = MarkovChain( args.transitions )
-    print mc.find_steady_state( )
+    mc.find_steady_state( )
     mc.to_graph( )
+    if args.simulate > 0:
+        mc.simulate( args.simulate )
+
 
 
 if __name__ == '__main__':
@@ -117,6 +140,13 @@ if __name__ == '__main__':
         , type = int
         , help = 'Enable debug mode. Default 0, debug level'
         )
+    parser.add_argument('--simulate', '-s'
+        , required = False
+        , type = int
+        , default = 0
+        , help = 'Number of steps to simulate (default 0)'
+        )
+
     class Args: pass 
     args = Args()
     parser.parse_args(namespace=args)
