@@ -74,15 +74,50 @@ class MarkovChain():
         # probabilities sums up to 1.
         return np.linalg.solve( a, b )
 
+    def to_graph( self ):
+        print self.T
+        graph = nx.DiGraph( self.T )
+        outfile = 'transition_graph.dot'
+        nx.write_dot( graph, outfile )
+        print( '[INFO] Wrote graphviz file to %s' % outfile )
+        return 0
+        try:
+            nx.draw_graphviz( graph, 'dot' )
+        except Exception as e:
+            print( "Can't draw using graphviz %s" % e )
+            nx.draw_networkx( graph )
+        plt.show( )
 
-def main( ):
+
+
+def main( args ):
     # mc = MarkovChain( '0 1/3 2/3; 0 0 1; 1 0 0' )
-    mc = MarkovChain( '0.9 0.075 0.025;0.15 0.8 0.05;0.25 0.25 0.5' )
+    mc = MarkovChain( args.transitions )
     print mc.find_steady_state( )
+    mc.to_graph( )
 
 
 if __name__ == '__main__':
-    main()
-
-
-        
+    import argparse
+    # Argument parser.
+    description = '''Markov Chain'''
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument('--transitions', '-t'
+        , required = True
+        , type = str
+        , help = 'Transition matrix'
+        )
+    parser.add_argument('--output', '-o'
+        , required = False
+        , help = 'Output file'
+        )
+    parser.add_argument( '--debug', '-d'
+        , required = False
+        , default = 0
+        , type = int
+        , help = 'Enable debug mode. Default 0, debug level'
+        )
+    class Args: pass 
+    args = Args()
+    parser.parse_args(namespace=args)
+    main( args )
