@@ -29,6 +29,24 @@ up_ = 'U'
 down_ = 'D'
 same_ = '.'
 
+def get_indices( i, size_ ):
+    """For a given size of network, what indices have the effect i.
+    For example 00, 01, 10, 11 has effect of 0, 1, 1, 2.
+    """
+    states = itertools.product( [0, 1], repeat = size_)
+    indices = []
+    for x, st in enumerate(states):
+        if i == sum( st ):
+            indices.append( x )
+    return np.array( indices )
+
+def get_effects( state, size_ ):
+    activity = np.zeros( size_ + 1)
+    for i, act in enumerate( activity ):
+        idx = get_indices( i, size_ )
+        activity[i] = np.sum( state[idx] )
+    return activity
+
 def transition( nodeA, nodeB ):
     transitions = []
     for x, y in zip( nodeA, nodeB):
@@ -50,10 +68,10 @@ def up_and_down_transitions( nodeA, nodeB ):
     trans = transition( nodeA, nodeB )
     return ( trans.count( up_ ), trans.count( down_ ) )
 
-def create_transition_graph( size, num_states = 2 ):
+def create_transition_graph( size ):
     # print( '[INFO] Creating transition network of size %d' % size )
     # print( '\t States of each element = %d' % num_states )
-    allStates = itertools.product( range(num_states), repeat = size )
+    allStates = itertools.product( [0, 1], repeat = size )
     network = nx.DiGraph( )
     network.graph['graph'] = { 
             'overlap' : 'false'
@@ -61,10 +79,10 @@ def create_transition_graph( size, num_states = 2 ):
             , 'splines' : 'true'
             }
 
-    for ss in allStates:
-        network.add_node( ss, label = label(ss)  )
+    for i, ss in enumerate(allStates):
+        network.add_node( ss, label = label(ss), order=i  )
 
-    assert network.number_of_nodes( ) == num_states ** size
+    assert network.number_of_nodes( ) == 2 ** size
     # print( '[INFO] Total states %d' % network.number_of_nodes( ) )
 
     # Only connect nodes which are one distance away.
@@ -110,7 +128,9 @@ def add_interaction( network, pup, pdown, exc, inh ):
         p = reduce( lambda x, y : x*y, p )
         assert p <= 1.0, "P must be less than 1.0, got %s" % p
         network[s][t]['weight'] = p
-    matT = nx.to_numpy_matrix( network )
+
+    # Notice. Make sure nodelist is passed in correct sorted order.
+    matT = nx.to_numpy_matrix( network, nodelist=sorted(network.nodes()) )
     # Make sure that diagonal entries are 1.0 - sum of rest.
     for i, row in enumerate(matT):
         row[0,i] = 1.0 - np.sum( row )
@@ -143,7 +163,8 @@ def main( size,  **args ):
 
     # Once I have the transition matrix, I now use markov module to solve it.
     s = markov.MarkovChain( T )
-    return s.find_steady_state( )
+    ss = s.find_steady_state( )
+    return get_effects( ss, size )
 
 if __name__ == '__main__':
     import argparse
@@ -157,13 +178,13 @@ if __name__ == '__main__':
         )
     parser.add_argument('--pUp', '-u'
         , required = False
-        , default = 0.1
+        , default = 0.001
         , type = float
         , help = 'Down to Up transition probabilities'
         )
     parser.add_argument('--pDown', '-d'
         , required = False
-        , default = 0.1
+        , default = 0.001
         , type = float
         , help = 'Up to Down transition probabilities'
         )
@@ -187,4 +208,5 @@ if __name__ == '__main__':
     class Args: pass 
     args = Args()
     parser.parse_args(namespace=args)
-    main( args.system_size, **vars(args) )
+    steadyState = main( args.system_size, **vars(args) )
+    print( steadyState )

@@ -21,33 +21,14 @@ import math
 from collections import defaultdict
 import itertools
 
-size_ = 5
+size_ = 2
 pUp_ = 0.01
 pDown_ = 0.01
 
 try:
-    plt.style.use( 'ggplot' )
+    plt.style.use( 'poster' )
 except Exception as e:
     pass
-
-def get_indices( i ):
-    """For a given size of network, what indices have the effect i.
-    For example 00, 01, 10, 11 has effect of 0, 1, 1, 2.
-    """
-    global size_
-    states = itertools.product( [0, 1], repeat = size_)
-    indices = []
-    for x, st in enumerate(states):
-        if i == sum( st ):
-            indices.append( x )
-    return np.array( indices )
-
-def get_effects( state ):
-    activity = np.zeros( size_ + 1)
-    for i, act in enumerate( activity ):
-        idx = get_indices( i )
-        activity[i] = np.sum( state[idx] )
-    return activity
 
 def main( ):
     effect = []
@@ -55,10 +36,10 @@ def main( ):
     for c in range(100):
         delUp = 0.005 * c
         xvec.append( delUp )
-        sol = markov_chains.main(
+        ef = markov_chains.main(
                 size = size_, pUp = pUp_, pDown = pDown_, excitation = delUp
                 )
-        effect.append(  get_effects(sol) )
+        effect.append( ef )
 
     effect = np.vstack( effect )
     for i, row in enumerate( effect.T ):
