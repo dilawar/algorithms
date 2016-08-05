@@ -118,10 +118,12 @@ def add_interaction( network, pup, pdown, interaction ):
 
 
 def main( args ):
-    size = args.system_size
+    size = args['system_size']
     network = create_transition_graph( size )
     # Add interaction and return the matrix
-    T = add_interaction( network , args.pUp, args.pDown, (args.interaction, 0.0) )
+    T = add_interaction( network , args['pUp'], args['pDown']
+            , (args['excitation'], args['inhibition']) 
+            )
     transitionMatFile = 'transition_matrix_%d.csv' % size 
 
     matImgFile = 'transition_mat_%d.png' % size
@@ -164,13 +166,19 @@ if __name__ == '__main__':
         , type = float
         , help = 'Up to Down transition probabilities'
         )
-    parser.add_argument('--interaction', '-i'
+    parser.add_argument('--excitation', '-e'
         , required = False
         , default = 0.0
         , type = float
-        , help = 'Interaction of \delta pOn'
+        , help = 'Excitation. Increases pUp of \delta pOn'
+        )
+    parser.add_argument('--inhibition', '-i'
+        , required = False
+        , default = 0.0
+        , type = float
+        , help = 'Inhibition. Decreases pDown of \delta pDown'
         )
     class Args: pass 
     args = Args()
     parser.parse_args(namespace=args)
-    main( args )
+    main( vars(args) )
