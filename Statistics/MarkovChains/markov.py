@@ -24,9 +24,9 @@ import numpy as np
 class MarkovChain():
     """Markov chains"""
 
-    def __init__(self, T, **kwargs):
+    def __init__(self, mat_or_string, **kwargs):
         self.T = None
-        self.init_transition_matrix( T )
+        self.init_transition_matrix( mat_or_string )
         # size of the system
         self.N = self.T.shape[0]
         self.G = None
@@ -48,7 +48,8 @@ class MarkovChain():
                 r.insert( i, 1.0 - np.sum( r ) )
                 self.T[i] = r 
         else:
-            self.T = np.matrix( mat_or_string )
+            self.T = mat_or_string
+            self.N = self.T.shape[0]
 
         if abs( np.sum( self.T ) - self.N) >= 1e-7:
             print( '[ERROR] Invalid transition matrix' )
