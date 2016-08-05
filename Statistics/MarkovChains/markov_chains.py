@@ -124,24 +124,24 @@ def main( args ):
     T = add_interaction( network , args['pUp'], args['pDown']
             , (args['excitation'], args['inhibition']) 
             )
-    transitionMatFile = 'transition_matrix_%d.csv' % size 
+    if args.get('plot', False):
+        transitionMatFile = 'transition_matrix_%d.csv' % size 
+        np.savetxt( transitionMatFile, T )
+        matImgFile = 'transition_mat_%d.png' % size
+        plt.figure()
+        plt.imshow( T, interpolation = 'none' )
+        plt.colorbar( )
+        plt.savefig( matImgFile )
+        plt.close( )
 
-    matImgFile = 'transition_mat_%d.png' % size
-    plt.figure()
-    plt.imshow( T, interpolation = 'none' )
-    plt.colorbar( )
-    plt.savefig( matImgFile )
-    plt.close( )
-
-    np.savetxt( transitionMatFile, T )
-    dotFile = 'network_%d.dot' % size 
-    nx.write_dot( network, dotFile )
-    print( '[INFO] Graph is written to dot file %s' % dotFile )
-    subprocess.call( [ "neato", "-Tpng", dotFile,  "-O"  ] )
+        dotFile = 'network_%d.dot' % size 
+        nx.write_dot( network, dotFile )
+        print( '[INFO] Graph is written to dot file %s' % dotFile )
+        subprocess.call( [ "neato", "-Tpng", dotFile,  "-O"  ] )
 
     # Once I have the transition matrix, I now use markov module to solve it.
     s = markov.MarkovChain( T )
-    print s.find_steady_state( )
+    return s.find_steady_state( )
 
 
 if __name__ == '__main__':
@@ -177,6 +177,11 @@ if __name__ == '__main__':
         , default = 0.0
         , type = float
         , help = 'Inhibition. Decreases pDown of \delta pDown'
+        )
+
+    parser.add_argument('--plot', '-p'
+        , action = 'store_true'
+        , help = 'If given produce plots.'
         )
     class Args: pass 
     args = Args()
