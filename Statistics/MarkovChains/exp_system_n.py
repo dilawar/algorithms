@@ -21,7 +21,7 @@ import math
 from collections import defaultdict
 import itertools
 
-size_ = 2
+size_ = 4
 pUp_ = 0.01
 pDown_ = 0.01
 
