@@ -51,8 +51,8 @@ def up_and_down_transitions( nodeA, nodeB ):
     return ( trans.count( up_ ), trans.count( down_ ) )
 
 def create_transition_graph( size, num_states = 2 ):
-    print( '[INFO] Creating transition network of size %d' % size )
-    print( '\t States of each element = %d' % num_states )
+    # print( '[INFO] Creating transition network of size %d' % size )
+    # print( '\t States of each element = %d' % num_states )
     allStates = itertools.product( range(num_states), repeat = size )
     network = nx.DiGraph( )
     network.graph['graph'] = { 
@@ -65,7 +65,7 @@ def create_transition_graph( size, num_states = 2 ):
         network.add_node( ss, label = label(ss)  )
 
     assert network.number_of_nodes( ) == num_states ** size
-    print( '[INFO] Total states %d' % network.number_of_nodes( ) )
+    # print( '[INFO] Total states %d' % network.number_of_nodes( ) )
 
     # Only connect nodes which are one distance away.
     for n in network.nodes():
@@ -88,27 +88,27 @@ def create_transition_graph( size, num_states = 2 ):
 
     return network
 
-def add_interaction( network, pup, pdown, interaction ):
-    delpUp, delpDown = interaction
+def add_interaction( network, pup, pdown, exc, inh ):
     for s, t in network.edges( ):
         trans = transition( s, t )
-        p = 1.0
+        p = []
         # pxpr = []
         for x, tr in zip(s, trans):
             if tr == up_:
-                p *= ( pup + delpUp )  
+                p.append( pup + exc )  
                 # pxpr.append( p )
             elif tr == down_:
-                p *= (pdown + delpDown)
+                p.append(pdown + inh)
                 # pxpr.append( p )
             else:
                 if x == 0:
-                    p *= ( 1.0 - pup )
+                    p.append( 1.0 - pup )
                 else:
-                    p *= ( 1.0 - pdown )
+                    p.append( 1.0 - pdown )
                 # pxpr.append( p )
-        # print pxpr
-        assert p <= 1.0
+        # Multiply them all
+        p = reduce( lambda x, y : x*y, p )
+        assert p <= 1.0, "P must be less than 1.0, got %s" % p
         network[s][t]['weight'] = p
     matT = nx.to_numpy_matrix( network )
     # Make sure that diagonal entries are 1.0 - sum of rest.
@@ -117,13 +117,16 @@ def add_interaction( network, pup, pdown, interaction ):
     return matT
 
 
-def main( args ):
-    size = args['system_size']
+def main( size,  **args ):
     network = create_transition_graph( size )
     # Add interaction and return the matrix
-    T = add_interaction( network , args['pUp'], args['pDown']
-            , (args['excitation'], args['inhibition']) 
+    T = add_interaction( network
+            , args['pUp']
+            , args['pDown']
+            , args.get('excitation', 0.0) 
+            , args.get('inhibition', 0.0) 
             )
+    print( "Running with parameters : %s" % args )
     if args.get('plot', False):
         transitionMatFile = 'transition_matrix_%d.csv' % size 
         np.savetxt( transitionMatFile, T )
@@ -142,7 +145,6 @@ def main( args ):
     # Once I have the transition matrix, I now use markov module to solve it.
     s = markov.MarkovChain( T )
     return s.find_steady_state( )
-
 
 if __name__ == '__main__':
     import argparse
@@ -186,4 +188,4 @@ if __name__ == '__main__':
     class Args: pass 
     args = Args()
     parser.parse_args(namespace=args)
-    main( vars(args) )
+    main( args.system_size, **vars(args) )
