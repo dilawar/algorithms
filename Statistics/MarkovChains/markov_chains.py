@@ -140,6 +140,8 @@ def add_interaction( network, pup, pdown, exc, inh ):
 def main( size,  **args ):
     network = create_transition_graph( size )
     # Add interaction and return the matrix
+    assert args['pUp'] > 0.0
+    assert args['pDown'] > 0.0
     T = add_interaction( network
             , args['pUp']
             , args['pDown']
