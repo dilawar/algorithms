@@ -136,7 +136,6 @@ def main( size,  **args ):
         plt.colorbar( )
         plt.savefig( matImgFile )
         plt.close( )
-
         dotFile = 'network_%d.dot' % size 
         nx.write_dot( network, dotFile )
         print( '[INFO] Graph is written to dot file %s' % dotFile )

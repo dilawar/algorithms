@@ -21,9 +21,9 @@ import math
 from collections import defaultdict
 import itertools
 
-size_ = 4
-pUp_ = 0.001
-pDown_ = 0.001
+size_ = 5
+pUp_ = 0.01
+pDown_ = 0.01
 
 try:
     plt.style.use( 'ggplot' )
@@ -53,7 +53,7 @@ def main( ):
     effect = []
     xvec = []
     for c in range(100):
-        delUp = 0.0005 * c
+        delUp = 0.005 * c
         xvec.append( delUp )
         sol = markov_chains.main(
                 size = size_, pUp = pUp_, pDown = pDown_, excitation = delUp
