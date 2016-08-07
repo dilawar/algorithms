@@ -171,7 +171,7 @@ def main( size,  **args ):
 
     # Once I have the transition matrix, I now use markov module to solve it.
     s = markov.MarkovChain( T )
-    ss = s.find_steady_state( )
+    ss = s.find_steady_state( method = args['method'] )
     return get_effects( ss, size )
 
 if __name__ == '__main__':
@@ -208,10 +208,15 @@ if __name__ == '__main__':
         , type = float
         , help = 'Inhibition. Decreases pDown of \delta pDown'
         )
-
     parser.add_argument('--plot', '-p'
         , action = 'store_true'
         , help = 'If given produce plots.'
+        )
+    parser.add_argument('--method', '-m'
+        , required = False
+        , default = 'analytic'
+        , type = str
+        , help = 'Which method (default analytic)'
         )
     class Args: pass 
     args = Args()

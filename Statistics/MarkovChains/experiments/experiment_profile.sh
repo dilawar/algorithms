@@ -18,11 +18,12 @@
 #===============================================================================
 
 set -o nounset                              # Treat unset variables as an error
+set -e
 PYTHON=`which python`
 
 for (( i = 1; i < 12; i++ )); do
     echo "Running a system of size $i"
     ex1=`echo $RANDOM.0/2^17 | bc -l`
     inh1=`echo $RANDOM.0/2^17 | bc -l`
-    $PYTHON ../markov_chains.py -s $i -p -e $ex1 -i $inh1
+    $PYTHON ../markov_chains.py -s $i -p -e $ex1 -i $inh1 
 done

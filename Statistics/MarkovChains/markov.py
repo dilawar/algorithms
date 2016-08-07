@@ -62,9 +62,11 @@ class MarkovChain():
             print( '[ERR] Invalid transition matrix. Each row must add up to 1' )
             print( '\t I constructed: %s' % self.T )
 
-    def find_steady_state( self, method = 'analytic',  max_iterations = 1000 ):
+    def find_steady_state( self, **kwargs):
         # There are two ways in which one can do that. 
-        if method == 'numerical':
+        if kwargs.get('method', 'analytic') == 'numeric':
+            print( '[INFO] Running numeric algorithm' )
+            max_iterations = kwargs.get( 'max_iterations', 100 )
             oldT = self.T
             newT = np.dot(oldT,  self.T)
             i = 0
@@ -73,7 +75,8 @@ class MarkovChain():
                 newT = np.dot(oldT,  self.T)
                 i += 0
                 assert i < max_iterations, 'Increase the max_iterations'
-            return newT.diagonal( )
+            diag = np.ravel( newT.diagonal( ) )
+            return diag
 
         # Other method is to use the steady state argument that 
         #    finalT = finalT * self.T
@@ -86,7 +89,7 @@ class MarkovChain():
         
         # Up to now, this system is lineary dependant. Use that fact all
         # probabilities sums up to 1.
-        return scipy.linalg.solve( a, b )
+        return np.linalg.solve( a, b )
 
     def to_graph( self ):
         self.G = nx.DiGraph( self.T )
@@ -115,17 +118,14 @@ class MarkovChain():
             else:
                 # move to other state
                 probs = self.T[currS,:currS] + self.T[currS,currS:]
-                print probs
                 probs = probs / np.linalg.norm( probs, 1 )
-                print probs
                 nextS = np.random.choice( otherStates, p = probs )
-                print nextS
 
-def main( args ):
+def main( args, method = 'analytic' ):
     mc = MarkovChain( args.transitions )
     print( '[INFO] Transition matrix ' )
     print( mc.T )
-    stationary = mc.find_steady_state( )
+    stationary = mc.find_steady_state( method = method )
     print( '[RESULT] Stationary distribution' )
     print( stationary )
     mc.to_graph( )
