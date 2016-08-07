@@ -20,7 +20,9 @@
 set -o nounset                              # Treat unset variables as an error
 PYTHON=`which python`
 
-for (( i = 1; i < 20; i++ )); do
+for (( i = 1; i < 12; i++ )); do
     echo "Running a system of size $i"
-    $PYTHON ../markov_chains.py -s $i -p
+    ex1=`echo $RANDOM.0/2^17 | bc -l`
+    inh1=`echo $RANDOM.0/2^17 | bc -l`
+    $PYTHON ../markov_chains.py -s $i -p -e $ex1 -i $inh1
 done

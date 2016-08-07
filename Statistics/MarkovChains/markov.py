@@ -18,6 +18,7 @@ import sys
 import os
 import networkx as nx
 import matplotlib.pyplot as plt
+import scipy
 import numpy as np
 
 
@@ -85,7 +86,7 @@ class MarkovChain():
         
         # Up to now, this system is lineary dependant. Use that fact all
         # probabilities sums up to 1.
-        return np.linalg.solve( a, b )
+        return scipy.linalg.solve( a, b )
 
     def to_graph( self ):
         self.G = nx.DiGraph( self.T )
