@@ -154,14 +154,19 @@ def main( size,  **args ):
         np.savetxt( transitionMatFile, T )
         matImgFile = 'transition_mat_%d.png' % size
         plt.figure()
-        plt.imshow( T, interpolation = 'none' )
-        plt.colorbar( )
+        # create a binary image out of T.
+        tImg = np.copy(T)
+        tImg[ np.where( tImg != 0 ) ] = 1.0
+        plt.figure( )
+        plt.imshow( tImg, interpolation = 'none' )
+        plt.title( 'Transition matrix. Zero and non-zero entries' )
+        # plt.colorbar( )
         plt.savefig( matImgFile )
         plt.close( )
         dotFile = 'network_%d.dot' % size 
         nx.write_dot( network, dotFile )
         print( '[INFO] Graph is written to dot file %s' % dotFile )
-        subprocess.call( [ "neato", "-Tpng", dotFile,  "-O"  ] )
+        # subprocess.call( [ "neato", "-Tpng", dotFile,  "-O"  ] )
 
     # Once I have the transition matrix, I now use markov module to solve it.
     s = markov.MarkovChain( T )
@@ -210,5 +215,9 @@ if __name__ == '__main__':
     class Args: pass 
     args = Args()
     parser.parse_args(namespace=args)
+    t1 = time.time()
     steadyState = main( args.system_size, **vars(args) )
+    t2 = time.time( )
+    print( '[INFO] Time taken %f' % ( t2 - t1 ) )
+    print( '[INFO] Steady state' )
     print( steadyState )

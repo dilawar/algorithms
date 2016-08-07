@@ -65,6 +65,8 @@ def states_vs_interaction( pUp_, pDown_, plot = True ):
     return effect
 
 def phase_space( size ):
+    global size_ 
+    size_ = size
     pUpSpace = np.linspace(0.0001, 0.01, 50 )
     pDownSpace = np.linspace(0.0001, 0.01, 50 )
     for c in range( 20 ):
@@ -93,9 +95,10 @@ def phase_space( size ):
         print( '[INFO] Wrote phase space to %s' % outfile )
 
 
-def main( ):
-    global size_
-    phase_space( size_ )
+def main( size ):
+    print( '[INFO] System with size %d' % size )
+    phase_space( size )
 
 if __name__ == '__main__':
-    main()
+    system_size = int(sys.argv[1])
+    main( system_size )
