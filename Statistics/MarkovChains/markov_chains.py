@@ -153,7 +153,7 @@ def main( size,  **args ):
     if args.get('plot', False):
         transitionMatFile = 'transition_matrix_%d.csv' % size 
         np.savetxt( transitionMatFile, T )
-        matImgFile = 'transition_mat_%d.png' % size
+        matImgFile = 'transition_mat_%04d.png' % size
         plt.figure()
         # create a binary image out of T.
         tImg = np.copy(T)
@@ -223,4 +223,4 @@ if __name__ == '__main__':
     print( '[INFO] Steady state' )
     print( steadyState )
     with open( 'run_time.csv', 'a' ) as f:
-        f.write( '%d,%s\n' % ( args.system_size, t2 - t1 )
+        f.write( '%d,%s\n' % ( args.system_size, t2 - t1 ) )
