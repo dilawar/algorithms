@@ -23,6 +23,7 @@ import numpy as np
 import networkx as nx
 import subprocess
 import itertools
+import time
 import markov
 
 up_ = 'U'
@@ -221,3 +222,5 @@ if __name__ == '__main__':
     print( '[INFO] Time taken %f' % ( t2 - t1 ) )
     print( '[INFO] Steady state' )
     print( steadyState )
+    with open( 'run_time.csv', 'a' ) as f:
+        f.write( '%d,%s\n' % ( args.system_size, t2 - t1 )
