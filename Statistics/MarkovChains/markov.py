@@ -94,20 +94,14 @@ class MarkovChain():
     def to_graph( self ):
         # TODO: Add label on edges as well.
         self.G = nx.DiGraph( self.T )
-        print( 'edges' )
         outfile = 'transition_graph.dot'
         for s, t  in self.G.edges():
             self.G[s][t]['label'] = self.G[s][t]['weight']
-        nx.write_dot( self.G, outfile )
-        # nx.write_dot( graph, sys.stdout )
-        print( '[INFO] Wrote graphviz file to %s' % outfile )
+
+        outA = 'network_topology_%03d.dot' % self.G.number_of_nodes( )
+        nx.write_dot( self.G, outA )
+        print( '[INFO] Wrote network file to %s' % outA )
         return 0
-        try:
-            nx.draw_graphviz( self.G, 'dot' )
-        except Exception as e:
-            print( "Can't draw using graphviz %s" % e )
-            nx.draw_networkx( self.G )
-        # plt.show( )
 
     def simulate( self, steps = 1000 ):
         allStates = range( self.N )
