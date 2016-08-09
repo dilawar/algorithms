@@ -53,7 +53,7 @@ class MarkovChain():
             self.N = self.T.shape[0]
 
         if abs( np.sum( self.T ) - self.N) >= 1e-7:
-            print( '[ERROR] Invalid transition matrix' )
+            print( '[ERR] Invalid transition matrix' )
             print( '\tExpect sum %f, got %f' % (self.N, np.sum( self.T ) ) )
             print( self.T )
             quit( )
@@ -79,8 +79,8 @@ class MarkovChain():
             return diag
 
         # Other method is to use the steady state argument that 
-        #    finalT = finalT * self.T
-        #    self.T' * finalT' = finalT' (A' = transpose A)
+        #    finalDist = finalDist * self.T
+        #    self.T' * finalDist' = finalDist' (A' = transpose A)
         a = self.T.T - np.identity( self.T.shape[0] )
         b = np.zeros( self.T.shape[0] )
 
@@ -92,8 +92,12 @@ class MarkovChain():
         return np.linalg.solve( a, b )
 
     def to_graph( self ):
+        # TODO: Add label on edges as well.
         self.G = nx.DiGraph( self.T )
+        print( 'edges' )
         outfile = 'transition_graph.dot'
+        for s, t  in self.G.edges():
+            self.G[s][t]['label'] = self.G[s][t]['weight']
         nx.write_dot( self.G, outfile )
         # nx.write_dot( graph, sys.stdout )
         print( '[INFO] Wrote graphviz file to %s' % outfile )
