@@ -17,8 +17,11 @@ import sys
 import math
 import os
 import numpy as np
+import scipy.signal as sig
 import matplotlib as mpl
+import time 
 import matplotlib.pyplot as plt
+
 try:
     # mpl.style.use( 'seaborn-talk' )
     mpl.style.use( 'ggplot' )
@@ -38,24 +41,28 @@ def sync_index( a, b ):
     signA = np.sign( np.diff( a ) )
     signB = np.sign( np.diff( b ) )
     s1 = np.sum( signA * signB ) / len( signA )
-    s2 = np.convolve(signA, signB).max() / len( signA )
+    s2 = sig.fftconvolve(signA, signB).max() / len( signA )
     return (s1, s2)
 
 def sync_index_correlate( a, b ):
+    a = a - a.mean( )
+    b = b - b.mean( )
+    a = a / a.max()
+    b = b / b.max( )
     same = np.correlate( a, a )[0]
     other = np.correlate( a, b)[0]
     return other / same
 
 
 def main( ):
-    N = 10**3
-    time = np.linspace( 0, 50, N )
-    a = 1.2 +  np.sin( time )
+    N = 10**5
+    t = np.linspace( 0, 100, N )
+    a = 1.2 +  np.sin( t )
 
     bs = [ np.random.uniform( -0.1, 0.1, N ), np.random.normal( 0.1, 0.2, N )
-            , a, a * 0.2
-            , np.cos(time) , a + np.random.uniform(-0.2,0.1,N) 
-            , a + np.random.normal( 0, 0.2, N ), np.sin( 3.0 * time / 7.0 )
+            , 2.0 + a, a * 0.2
+            , np.cos(t) , a + np.random.uniform(-0.2,0.1,N) 
+            , a + np.random.normal( 0, 0.2, N ), np.sin( 3.0 * t / 7.0 )
             ]
 
     numRows = math.ceil( len(bs) / 2.0 )
@@ -65,8 +72,13 @@ def main( ):
         plt.plot( a, alpha = 0.5 )
         plt.plot( b, alpha = 0.5 )
         plt.xticks( [] )
+        t = time.time()
         s = sync_index( a, b )
+        print( 'Time taken %f' % ( time.time() - t ) )
+        t = time.time() 
         p = sync_index_correlate( a, b )
+        print( 'Time taken %f' % ( time.time() - t ) )
+
         t = '$S=(%.3f,%.3f)$, $c=%.3f$' % (s[0], s[1], p )
         plt.title( t, loc = 'center', fontsize = 10 )
         plt.xlabel( 'Plot %1d' % i )
