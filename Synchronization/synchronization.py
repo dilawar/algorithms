@@ -14,12 +14,14 @@ __email__            = "dilawars@ncbs.res.in"
 __status__           = "Development"
 
 import sys
+import math
 import os
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 try:
-    mpl.style.use( 'seaborn-talk' )
+    # mpl.style.use( 'seaborn-talk' )
+    mpl.style.use( 'ggplot' )
 except Exception as e:
     pass
 mpl.rcParams['axes.linewidth'] = 0.1
@@ -27,35 +29,47 @@ plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 
 
-def sync_index( a, b, periodic = True ):
+def sync_index( a, b ):
     # Must smooth out the high frequency components.
-    N = 11
-    kernal = np.ones( N ) / N
+    assert min(len( a ), len( b )) > 30, "Singal too small"
+    kernal = np.ones( 31 ) / 31.0
     a = np.convolve( a, kernal, 'same' )
     b = np.convolve( b, kernal, 'same' )
     signA = np.sign( np.diff( a ) )
     signB = np.sign( np.diff( b ) )
-    if periodic:
-        return  max( np.convolve(signA, signB, 'same') ) / len( signA )
-    else:
-        return  np.sum( signA * signB ) / len( signA )
+    s1 = np.sum( signA * signB ) / len( signA )
+    s2 = np.convolve(signA, signB).max() / len( signA )
+    return (s1, s2)
+
+def sync_index_correlate( a, b ):
+    same = np.correlate( a, a )[0]
+    other = np.correlate( a, b)[0]
+    return other / same
 
 
 def main( ):
     N = 10**3
-    time = np.linspace( 0, 30, 10**3 )
-    a = np.sin( time )
-    bs = [ time, a, np.cos(time)
-            , a + np.random.uniform(-0.1,0.1,N) 
-            , a + np.random.normal( 0, 0.2, N )
-            , np.sin( 0.5  * time )
+    time = np.linspace( 0, 50, N )
+    a = 1.2 +  np.sin( time )
+
+    bs = [ np.random.uniform( -0.1, 0.1, N ), np.random.normal( 0.1, 0.2, N )
+            , a, a * 0.2
+            , np.cos(time) , a + np.random.uniform(-0.2,0.1,N) 
+            , a + np.random.normal( 0, 0.2, N ), np.sin( 3.0 * time / 7.0 )
             ]
+
+    numRows = math.ceil( len(bs) / 2.0 )
+    plt.figure( figsize=(8,1.5 * numRows ) )
     for i, b in enumerate( bs ):
-        plt.subplot( len(bs) / 2, 2, i + 1)
-        plt.plot( a, label = 'A', alpha = 0.5 )
-        plt.plot( b, label = 'B', alpha = 0.5 )
-        plt.legend( framealpha = 0.5 )
-        plt.title( sync_index( a, b ) )
+        plt.subplot( numRows, 2, i + 1)
+        plt.plot( a, alpha = 0.5 )
+        plt.plot( b, alpha = 0.5 )
+        plt.xticks( [] )
+        s = sync_index( a, b )
+        p = sync_index_correlate( a, b )
+        t = '$S=(%.3f,%.3f)$, $c=%.3f$' % (s[0], s[1], p )
+        plt.title( t, loc = 'center', fontsize = 10 )
+        plt.xlabel( 'Plot %1d' % i )
     outfile = 'sync_index.png' 
     plt.tight_layout( )
     plt.savefig( outfile )
