@@ -27,24 +27,37 @@ plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 
 
-def sync_index( a, b ):
+def sync_index( a, b, periodic = True ):
+    # Must smooth out the high frequency components.
+    N = 11
+    kernal = np.ones( N ) / N
+    a = np.convolve( a, kernal, 'same' )
+    b = np.convolve( b, kernal, 'same' )
     signA = np.sign( np.diff( a ) )
     signB = np.sign( np.diff( b ) )
-    return np.sum( signA * signB ) / len( signA )
+    if periodic:
+        return  max( np.convolve(signA, signB, 'same') ) / len( signA )
+    else:
+        return  np.sum( signA * signB ) / len( signA )
 
 
 def main( ):
     N = 10**3
     time = np.linspace( 0, 30, 10**3 )
     a = np.sin( time )
-    N = 2 * 2
-    bs = [ time, a, np.cos(time), a + np.random.uniform( N ) ]
+    bs = [ time, a, np.cos(time)
+            , a + np.random.uniform(-0.1,0.1,N) 
+            , a + np.random.normal( 0, 0.2, N )
+            , np.sin( 0.5  * time )
+            ]
     for i, b in enumerate( bs ):
-        plt.subplot( len(bs) / 2, 2, i % 2 + 1)
-        plt.plot( a )
-        plt.plot( b )
+        plt.subplot( len(bs) / 2, 2, i + 1)
+        plt.plot( a, label = 'A', alpha = 0.5 )
+        plt.plot( b, label = 'B', alpha = 0.5 )
+        plt.legend( framealpha = 0.5 )
         plt.title( sync_index( a, b ) )
     outfile = 'sync_index.png' 
+    plt.tight_layout( )
     plt.savefig( outfile )
     print( 'All done. Wrote to %s' % outfile )
 
