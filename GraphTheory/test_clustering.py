@@ -3,6 +3,8 @@
 This file test if finding cliques can be used to partition a graph
 
 """
+
+from __future__ import print_function
     
 __author__           = "Dilawar Singh"
 __copyright__        = "Copyright 2016, Dilawar Singh"
@@ -31,6 +33,7 @@ def filter_graph( g, min_weight = 1.0 ):
     toRemove = [ ]
     for s, t in g.edges( ):
         if g[s][t][ 'weight' ] < min_weight:
+            print( 'D', end = '' )
             toRemove.append( (s, t) )
 
     g.remove_edges_from( toRemove )
@@ -73,13 +76,15 @@ def cluster_graph( g, colors, current_color = 0 ):
         # print stack
     return g
 
-def main( ):
-    g = nx.complete_graph( 20 )
-    for s, t in g.edges( ):
-        g[s][t]['weight'] = (0.15 + random.random( )) ** 2
+def main( g = None ):
+    if g is None:
+        print( 'Generating complete graph' )
+        g = nx.complete_graph( 20 )
+        for s, t in g.edges( ):
+            g[s][t]['weight'] = (0.15 + random.random( )) ** 2
 
     plt.subplot( 211 )
-    g = filter_graph( g )
+    g = filter_graph( g, 0.5 )
 
     width = []
     for s, t in g.edges( ):
@@ -96,4 +101,10 @@ def main( ):
     plt.savefig( 'test_graph.png' )
 
 if __name__ == '__main__':
-    main()
+    g = None
+    if len( sys.argv ) > 1:
+        graphfile = sys.argv[1]
+        print( '[INFO] Got graph file %s' % graphfile )
+        g = nx.read_gpickle( graphfile )
+        assert g.number_of_edges( ) > 10
+    main( g )
