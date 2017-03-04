@@ -30,6 +30,9 @@ def main( ):
             yvec.append( weight )
             # print( diff )
     plt.plot(yvec )
+    plt.plot( sorted (yvec), label = 'sorted' )
+    plt.legend(loc='best', framealpha=0.4)
+    plt.savefig( '%s.png' % sys.argv[0] )
     plt.show( )
 
 if __name__ == '__main__':
