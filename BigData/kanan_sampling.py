@@ -18,8 +18,6 @@ def sampleOnFly():
     for i, a in enumerate(array):
         p = prob_factor * a
 
-        
-
 
 def main():
     print("Calling main function:")
