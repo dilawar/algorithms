@@ -52,8 +52,7 @@ def show_img( img ):
     cv2.waitKey( 10 )
 
 def show_path( path, img, weight = 1 ):
-    cv2.polylines( img, [path], False, weight, 2)
-
+    cv2.polylines( img, [path], False, weight, 1)
 
 def updateAnts(  ):
     global ants_
@@ -72,7 +71,7 @@ def draw_ant( a, img, length = 10 ):
     # OpenCV works in 4th quadrant
     p1 = a.x, a.y
     p2 = a.x + int(length * math.cos( a.angle)), a.y - int(length * math.sin( a.angle))
-    cv2.arrowedLine( img, p1, p2, 255, 1 )
+    cv2.arrowedLine( img, (p2[1], p2[0]), (p1[1], p1[0]), 255, 1 )
 
 def simulate(  ):
     while True:
@@ -81,11 +80,10 @@ def simulate(  ):
 
 
 def test( ):
+    a = Ant.Ant( 0, x = 200, y = 100 )
+    b = Ant.Ant( 0, x = 100, y = 200 )
     while True:
-        a = Ant( 0, x = 200, y = 100 )
-        a.angle = PI / 2.0
-
-        b = Ant( 0, x = 100, y = 200 )
+        a.angle = 0
         b.angle = PI / 3.0
         show_img( grid_ )
 
@@ -99,7 +97,7 @@ def main( ):
     show_path( p2_, grid_ )
     show_path( p3_, grid_ )
     simulate( )
-    # test( )
+    #  test( )
 
 if __name__ == '__main__':
     main()

@@ -28,6 +28,15 @@ def angle( p1, p2 ):
         t = PI - t
     return t
 
+def get_mask_value( point, size ):
+    global grid_
+    x, y = point
+    img = grid_[ x-size/2:x+size/2, y-size/2:y+size/2 ]
+    return np.mean( img )
+
+def angle1( point ):
+    return angle( point, (0,0) )
+
 class Ant( ):
     def __init__( self, id, x=0, y=0, t=0 ):
         self.id = id 
@@ -41,14 +50,31 @@ class Ant( ):
         x, y = point
         self.prevX, self.prevY = self.x, self.y
         self.x, self.y = x, y
-        self.angle = angle( (x,y), (self.prevX, self.prevY ) )
+        self.angle = angle( (x,y), (self.prevX, self.prevY) )
 
     def __repr__( self ):
         return '%d, %d, %f' % (self.x, self.y, self.angle)
 
     def sensePixals( self ):
+        """Sense pixal only in direction of motion, whenever possible. 
+        """
         global grid_
         p0 = self.x, self.y
+        theta = self.angle 
+
+        #antenaTheta = PI / 4.0
+
+        ## Mask width
+        #w = 5
+        #rTheta = theta - antenaTheta
+        #rCenter = self.x + w * math.cos( rTheta ), self.y + w * math.sin( rTheta )
+
+        #lTheta = theta + antenaTheta 
+        #lCenter = self.x + w * math.cos( lTheta ), self.y + w * math.sin( lTheta )
+
+        #lPheromone = get_mask_value( lCenter, w )
+        #rPheromone = get_mask_value( rCenter, w )
+
         # next pixal to take.
         px, wx = [ ], [ ]
         for i in range(-1, 1):
@@ -57,13 +83,13 @@ class Ant( ):
                 if (x,y) == p0:
                     continue
                 if grid_[x, y ] > 0:
+                    mask = grid_[ x - 4: x+4, y-4:y+4 ]
                     px.append((x,y))
-                    wx.append( grid_[x,y] )
+                    wx.append( np.sum(mask) )
         # if no pixal found with pheromone, continue in random direction.
         if not px:
             px.append( (self.x + random.randint(1, 5), self.y + random.randint(1,5) ) )
             wx.append( 1 )
-
         return px, wx
 
     def chooseNextPoint( self, pixals, weights ):
@@ -71,8 +97,9 @@ class Ant( ):
         for i, p in enumerate( pixals ):
             theta = abs( angle( (self.x, self.y), p ) - self.angle )
             turn = math.sin( theta / 4.0 )             # max at 0, min at 2pi
+            # make an ROI with size 4 at this ROI.
             w = weights[ i ]
-            if turn > 0.3:
+            if turn > 0.5:
                 cost.append( w * turn )
             else:
                 cost.append( 1e-6)
@@ -81,6 +108,9 @@ class Ant( ):
         probs = map( lambda x: x / sum( cost ), cost )
         i = np.random.choice( range(len(toselect)), 1, p = probs )[0]
         return pixals[i]
+
+    def senseDirections( self ):
+        p = self.x, self.y
 
     def scanAndMove( self ):
         global grid_
