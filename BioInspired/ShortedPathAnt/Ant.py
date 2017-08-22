@@ -77,19 +77,22 @@ class Ant( ):
 
         # next pixal to take.
         px, wx = [ ], [ ]
-        for i in range(-1, 1):
-            for j in range(-1,1):
+        n = 3
+        for i in range(-n, n):
+            for j in range(-n, n):
                 x, y = self.x + i, self.y + j
                 if (x,y) == p0:
                     continue
-                if grid_[x, y ] > 0:
+                if grid_[x, y] > 0:
                     mask = grid_[ x - 4: x+4, y-4:y+4 ]
                     px.append((x,y))
                     wx.append( np.sum(mask) )
-        # if no pixal found with pheromone, continue in random direction.
+
+        # if no pixal found with pheromone, continue in random direction but do 
+        # not leave pheromone (weight = -1.0)
         if not px:
             px.append( (self.x + random.randint(1, 5), self.y + random.randint(1,5) ) )
-            wx.append( 1 )
+            wx.append( -1.0 )
         return px, wx
 
     def chooseNextPoint( self, pixals, weights ):
@@ -99,7 +102,7 @@ class Ant( ):
             turn = math.sin( theta / 4.0 )             # max at 0, min at 2pi
             # make an ROI with size 4 at this ROI.
             w = weights[ i ]
-            if turn > 0.5:
+            if turn > 0.8:
                 cost.append( w * turn )
             else:
                 cost.append( 1e-6)
@@ -107,7 +110,7 @@ class Ant( ):
 
         probs = map( lambda x: x / sum( cost ), cost )
         i = np.random.choice( range(len(toselect)), 1, p = probs )[0]
-        return pixals[i]
+        return pixals[i], weights[i]
 
     def senseDirections( self ):
         p = self.x, self.y
@@ -115,8 +118,9 @@ class Ant( ):
     def scanAndMove( self ):
         global grid_
         pixals, weights = self.sensePixals(  )
-        point = self.chooseNextPoint( pixals, weights )
-        # Add some pheromone 
-        grid_[ self.x, self.y ] += 1
+        point, w = self.chooseNextPoint( pixals, weights )
+        if w > 0:
+            # Add some pheromone 
+            grid_[ self.x, self.y ] += 1
         self.updatePos( point )
 

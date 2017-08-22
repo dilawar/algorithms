@@ -45,7 +45,7 @@ p3_ = spline_fit( pp3_ )
 paths_ = [ p1_, p2_, p3_ ]
 
 # Initially all ants are colony
-ants_ = [ Ant.Ant(i, x=colony_[0], y=colony_[1]) for i in range( 1 ) ]
+ants_ = [ Ant.Ant(i, x=colony_[0], y=colony_[1]) for i in range( 10000 ) ]
 
 def show_img( img ):
     cv2.imshow( "grid", img )
@@ -59,7 +59,7 @@ def updateAnts(  ):
     # Scan in neighbouring direction and select the best direction to
     [ a.scanAndMove( ) for a in ants_ ]
 
-def show_ants( length = 20 ):
+def show_ants( length = 5 ):
     global grid_
     global ants_
     img = np.copy( grid_ )
@@ -67,11 +67,11 @@ def show_ants( length = 20 ):
         draw_ant( a, img, length )
     show_img( img )
 
-def draw_ant( a, img, length = 10 ):
+def draw_ant( a, img, length = 5 ):
     # OpenCV works in 4th quadrant
     p1 = a.x, a.y
     p2 = a.x + int(length * math.cos( a.angle)), a.y - int(length * math.sin( a.angle))
-    cv2.arrowedLine( img, (p2[1], p2[0]), (p1[1], p1[0]), 255, 1 )
+    cv2.arrowedLine( img, (p2[1], p2[0]), (p1[1], p1[0]), 255, 2 )
 
 def simulate(  ):
     while True:
