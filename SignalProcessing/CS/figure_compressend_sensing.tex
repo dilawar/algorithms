@@ -1,10 +1,10 @@
 \RequirePackage{luatex85,shellesc}
 \documentclass[tikz,preview,multi=false]{standalone}
 \usepackage{pgfplots}
+\usepgfplotslibrary{groupplots}
 \begin{document}
 
 \begin{tabular}{c c c}
-
 \begin{tikzpicture}[scale=1]
     \begin{axis}[
     xlabel=Index,ylabel=
@@ -24,7 +24,7 @@
     , title = {\bf A}
     , width = 4cm
     ]
-    \addplot3 [raw gnuplot,surf,shader=interp,mesh/rows=64] gnuplot {
+    \addplot3 [raw gnuplot,surf,shader=interp,mesh/rows=125] gnuplot {
     plot "./_measurement_matrix.dat" matrix with image;
     };
     \end{axis}

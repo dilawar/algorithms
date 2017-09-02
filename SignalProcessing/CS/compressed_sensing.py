@@ -12,6 +12,8 @@ mpl.rcParams['axes.linewidth'] = 0.1
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 
+import pypgfplots
+
 
 N = 500
 s = 0.05
@@ -35,6 +37,14 @@ def obtain_random_measurements( x, k):
     np.savetxt( "_measurement_matrix.dat", A )
     y = np.dot( A, x )
     np.savetxt( "_measurements.dat", y )
+    pypgfplots.standalone( (np.arange(0,len(y),1), y)
+            , outfile = 'figure_measurements.tex' 
+            , title = 'Measured signal'
+            , every = 10
+            , label = r'\bf a.'
+            , axis_attribs = 'smooth,no marks'
+            , width = '8cm', height = '4cm'
+            )
     return A, y
 
 def main( ):
@@ -61,6 +71,13 @@ def main( ):
 
     # compressed recovery.
     x0 = np.dot( A.T,  y )
+    pypgfplots.standalone( matrix = A
+            , every = 10
+            , title = 'Measurement matrix'
+            , xlabel = 'index', ylabel = 'index'
+            , outfile = 'figure_measurements.tex' 
+            )
+
     res = l1eq_pd( x0, A, [ ], y )
     np.savetxt( '_result.dat', res )
     print( 'Error:', np.linalg.norm( res - x0 ) )
@@ -72,7 +89,6 @@ def main( ):
 
     plt.tight_layout( pad = 1 )
     plt.savefig( 'compressed_sensing.png' )
-
 
 if __name__ == '__main__':
     main()
