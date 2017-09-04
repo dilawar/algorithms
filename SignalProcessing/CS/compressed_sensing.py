@@ -18,9 +18,12 @@ import pypgfplots
 N = 500
 s = 0.05
 
+
 # Theoretically K > 2sN, in practice K >= 4sN (gurenteed); >= 3sN also works
 # sometime.
 K = int( 5 * s * N )
+
+title_ = 'N=%d, samples=%d ' % (N, K )
 
 def sparse_signal( n, sparsity ):
     x = np.zeros( n )
@@ -29,13 +32,15 @@ def sparse_signal( n, sparsity ):
     np.savetxt( "_signal.dat", x )
     return x
 
-def obtain_random_measurements( x, k):
+def obtain_random_measurements( x, k, err = 0):
+    global title_
     # Make boolean matrix for measurement. It represents the Mask used in
     # imaging.
     # A = np.random.randn( k, N )
     A = np.random.randint(0, 2, (k, N) )
     np.savetxt( "_measurement_matrix.dat", A )
-    y = np.dot( A, x )
+    x1 = x + err
+    y = np.dot( A, x1 )
     np.savetxt( "_measurements.dat", y )
     pypgfplots.standalone( (np.arange(0,len(y),1), y)
             , outfile = 'figure_measurements.tex' 
@@ -48,6 +53,7 @@ def obtain_random_measurements( x, k):
     return A, y
 
 def main( ):
+    global title_
     gridSize = (2, 2)
 
     ax1 = plt.subplot2grid( gridSize, (0,0), colspan = 1 )
@@ -60,7 +66,10 @@ def main( ):
     ax1.plot( x )
     ax1.set_title( 'x' )
 
-    A, y = obtain_random_measurements( x, K )
+    mean, var = 1e-2, 1e-3
+    title_ += 'Error=normal(%.3f,%.3f)' % (mean,var )
+    err = np.abs( np.random.normal( mean, var ) )
+    A, y = obtain_random_measurements( x, K, err = err )
     fig = ax2.imshow( A, aspect = 'auto', interpolation = 'none' )
     ax2.set_title( 'A (measurement matrix)' )
     plt.colorbar( fig, ax = ax2 )
@@ -87,7 +96,8 @@ def main( ):
     ax4.set_title( 'reconstructed' )
     ax4.legend(loc='best', framealpha=0.4)
 
-    plt.tight_layout( pad = 1 )
+    plt.suptitle( title_ )
+    plt.tight_layout( pad = 1, rect = (0,0,1,0.9) )
     plt.savefig( 'compressed_sensing.png' )
 
 if __name__ == '__main__':
