@@ -18,7 +18,6 @@ import pypgfplots
 N = 500
 s = 0.05
 
-
 # Theoretically K > 2sN, in practice K >= 4sN (gurenteed); >= 3sN also works
 # sometime.
 K = int( 5 * s * N )
@@ -87,7 +86,9 @@ def main( ):
             , outfile = 'figure_measurements.tex' 
             )
 
+    x0 = np.dot( A.T,  y )
     res = l1eq_pd( x0, A, [ ], y )
+
     np.savetxt( '_result.dat', res )
     print( 'Error:', np.linalg.norm( res - x0 ) )
     ax4.plot( x, label = 'original' )
