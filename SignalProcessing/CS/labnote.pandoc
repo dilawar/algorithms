@@ -10,7 +10,35 @@ header-includes:
     - \usepackage{pgfplots}
 ---
 
-# Summary 
+# Introduction 
+
+Can you solve $Ax=b$ for $x$ when number of rows are less than number of columns
+in $A$? For examples, give me 3 numbers whose average is 3. Or solve
+$x/3+y/3+z/3=3$. You are right! There are many solutions to this problem! 
+
+Let's put more containts so that solution is unique. Give me a solution which
+has minimum length (minimize $L_2$-norm)?  Answer is 3,3,3. Give me a solution
+which is most sparse (least number of non-zero entries)? Answer is 9,0,0 (or
+0,0,9). Aha! Many sigals are sparse (in some domain). Images are sparse in
+Fourier/Wavelets domain; neural acitivity is sparse in time-domain, reading for
+learning is sparse in both time and spatial-domain. Can we solve $Ax=b$ for
+sparse $x$. Formally, 
+
+$$\min_x L_0(x), \quad \text{st} \quad Ax = b$$ where $L_0$ is the 0-norm i.e. number of non-zero entries.
+
+Unfortunately $L_0$ is not a convex-funtion. This problem is NP-hard. Often one
+uses _convex relaxation_ tricks and replace the non-convex function with convex
+one. 
+
+$$\min_x L_1(x), \quad \text{st} \quad Ax = b$$
+
+It is now well-understood that under assumption on $A$, we can recover $x$ by
+solving this tractable convex-optimization problem rather than the original NP hard
+problem. Greedy strategy based solvers also exists which works even faster
+(though, according to Terry Tao blog, they do not guarentee the same performance
+as interior-point method based).
+
+# More introduction
 
 If $x_N$ (size $N$) is $S-sparse$ then an under-determined system $A_{kN}x_{N}
 =b_k$ -- where $b$ is vector of $k$ observations -- can be solved _exactly_
@@ -54,6 +82,9 @@ figures.
 __Dependencies__ In addition to `scipy`, `numpy`, and `matplotlib`, we also
 need [pyCSalgo](https://github.com/nikcleju/pyCSalgos). It is available via
 pip: `pip install pyCSalgo --user`.
+
+Code is available at
+[github](https://github.com/dilawar/algorithms/tree/master/SignalProcessing/CS/)
 
 ## Process
 
