@@ -10,35 +10,36 @@ header-includes:
     - \usepackage{pgfplots}
 ---
 
-# Introduction 
-
 Can you solve $Ax=b$ for $x$ when number of rows are less than number of columns
-in $A$? For examples, give me 3 numbers whose average is 3. Or solve
-$x/3+y/3+z/3=3$. You are right! There are many solutions to this problem! 
+in $A$ i.e there are more variables than equations? Such a system is called
+underdetermined system. For examples, give me 3 numbers whose average is 3. Or
+solve $x/3+y/3+z/3=3$. You are right! There are many solutions to this problem! 
 
-Let's put more containts so that solution is unique. Give me a solution which
-has minimum length (minimize $L_2$-norm)?  Answer is 3,3,3. Give me a solution
-which is most sparse (least number of non-zero entries)? Answer is 9,0,0 (or
-0,0,9). Aha! Many sigals are sparse (in some domain). Images are sparse in
-Fourier/Wavelets domain; neural acitivity is sparse in time-domain, reading for
-learning is sparse in both time and spatial-domain. Can we solve $Ax=b$ for
-sparse $x$. Formally, 
+If one adds more containts then one can hope to get a unique solution. Give me a
+solution which has minimum length (minimize $L_2$-norm)?  Answer is 3,3,3
+(hopefully). Give me a solution which is most sparse (least number of non-zero
+entries)? Answer is 9,0,0 (or 0,0,9). 
+
+Many signals are sparse (in some domain). Images are sparse in Fourier/Wavelets
+domain; neural acitivity is sparse in time-domain, activity of programming is
+sparse in spatial-domain. Can we solve under-determined $Ax=b$ for sparse $x$.
+Formally, 
 
 $$\min_x L_0(x), \quad \text{st} \quad Ax = b$$ where $L_0$ is the 0-norm i.e. number of non-zero entries.
 
-Unfortunately $L_0$ is not a convex-funtion. This problem is NP-hard. Often one
-uses _convex relaxation_ tricks and replace the non-convex function with convex
-one. 
+This problem is **hard** to solve. $L_0$ is not a convex-funtion. NP-hard. In
+this case, one uses _convex relaxation_ trick and replace the non-convex
+function with convex one. 
 
 $$\min_x L_1(x), \quad \text{st} \quad Ax = b$$
 
-It is now well-understood that under assumption on $A$, we can recover $x$ by
-solving this tractable convex-optimization problem rather than the original NP hard
-problem. Greedy strategy based solvers also exists which works even faster
-(though, according to Terry Tao blog, they do not guarentee the same performance
-as interior-point method based).
+It is now well-understood that under certain assumptions on $A$, we can recover
+$x$ by solving this tractable convex-optimization problem rather than the
+original NP hard problem. Greedy strategy based solvers also exists which works
+even faster (though, according to Terry Tao blog, they do not guarentee the same
+performance as interior-point method based).
 
-# More introduction
+# Somewhat formal statement
 
 If $x_N$ (size $N$) is $S-sparse$ then an under-determined system $A_{kN}x_{N}
 =b_k$ -- where $b$ is vector of $k$ observations -- can be solved _exactly_
@@ -86,7 +87,7 @@ pip: `pip install pyCSalgo --user`.
 Code is available at
 [github](https://github.com/dilawar/algorithms/tree/master/SignalProcessing/CS/)
 
-## Process
+## Algorithm
 
 1. __input__ : sparse signal x of size N 
 2. Generate a random matrix (__measurement matrix__) $A$ of size $k\times N$.
@@ -100,6 +101,9 @@ This is reimplementation of `l1magic` routine written in Matlab by
 [Candes](https://statweb.stanford.edu/~candes/l1magic/). When $k >> 2S$ where $S$ 
 is the sparsity of $x$, we can recover $x$ quite well. In practice, $k \ge 4S$ almost
 always gives exact result.
+
+There are other algorithms available which works faster; they are based on
+**greedy** strategy. We are not discussing them here.
 
 
 ## Sparse in time domain
@@ -154,4 +158,5 @@ To learn about compressed sensing, I recommend following articles
 - Terry Tao Blog [with tag Compressed
   sensing](https://terrytao.wordpress.com/tag/compressed-sensing/).
 
-There are many many other great articles and papers on this subject. 
+There are many many other great articles and papers on this subject. There are
+some dedicated webpages also. 
