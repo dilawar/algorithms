@@ -89,6 +89,15 @@ def main( ):
     x0 = np.dot( A.T,  y )
     res = l1eq_pd( x0, A, [ ], y )
 
+    pypgfplots.standalone( ( np.arange(0, len(res),1), res, x)
+            , title = 'Recovery, with error in measurements' 
+            , outfile = 'figure_solution.pdf'
+            , legend = [ 'Recovered', 'Original' ] 
+            , xlabel = 'Time'
+            , label = 'c.'
+            , axis_attrib = 'no marks'
+            )
+
     np.savetxt( '_result.dat', res )
     print( 'Error:', np.linalg.norm( res - x0 ) )
     ax4.plot( x, label = 'original' )

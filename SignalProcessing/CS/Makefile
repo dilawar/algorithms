@@ -1,14 +1,14 @@
 IMAGES= ./figure_compressend_sensing.pdf ./figure_solution.pdf \
 	./figure_compressend_sensing_DCT.pdf ./figure_measurements.pdf
 
-all : ./compressed_sensing.png ./magic_reconstruction.png  labnote.pdf labnote.html 
+all : ./compressed_sensing.png ./magic_reconstruction.png  compressed_sensing.pdf compressed_sensing.html 
 	@echo "All done"
 
-labnote.pdf : labnote.pandoc $(IMAGES)
+compressed_sensing.pdf : compressed_sensing.pandoc $(IMAGES)
 	~/Scripts/pandoc2pdf.sh $<
 
-labnote.html : labnote.pandoc $(IMAGES)
-	~/Scripts/pandoc2html.py $<
+compressed_sensing.html : compressed_sensing.pandoc $(IMAGES)
+	~/Scripts/pandoc2wordpress.py $<
 
 %.png : %.py 
 	PYTHONPATH=~/Work/GITHUB/DILAWAR/pypgfplots/ python $<

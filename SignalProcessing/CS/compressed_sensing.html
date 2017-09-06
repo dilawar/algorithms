@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Dilawar Singh" />
+  <title>Robust recovery of sparse signal under very limited measurements</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML-full" type="text/javascript"></script>
+  
+</head>
+<body>
+<div id="header">
+<h1 class="title">Robust recovery of sparse signal under very limited measurements</h1>
+<h2 class="author">Dilawar Singh</h2>
+</div>
+<p>Can you solve <span class="math inline">\(Ax=b\)</span> for <span class="math inline">\(x\)</span> when number of rows are less than number of columns in <span class="math inline">\(A\)</span> i.e there are more variables than equations? Such a system is called underdetermined system. For examples, give me 3 numbers whose average is 3. Or solve <span class="math inline">\(x/3+y/3+z/3=3\)</span>. You are right! There are many solutions to this problem!</p>
+<p>If one adds more containts then one can hope to get a unique solution. Give me a solution which has minimum length (minimize <span class="math inline">\(L_2\)</span>-norm)? Answer is 3,3,3 (hopefully). Give me a solution which is most sparse (least number of non-zero entries)? Answer is 9,0,0 (or 0,0,9).</p>
+<p>Many signals are sparse (in some domain). Images are sparse in Fourier/Wavelets domain; neural acitivity is sparse in time-domain, activity of programming is sparse in spatial-domain. Can we solve under-determined <span class="math inline">\(Ax=b\)</span> for sparse <span class="math inline">\(x\)</span>. Formally,</p>
+<p><span class="math display">\[\min_x L_0(x), \quad \text{st} \quad Ax = b\]</span> where <span class="math inline">\(L_0\)</span> is the 0-norm i.e. number of non-zero entries.</p>
+<p>This problem is <strong>hard</strong> to solve. <span class="math inline">\(L_0\)</span> is not a convex-funtion. NP-hard. In this case, one uses <em>convex relaxation</em> trick and replace the non-convex function with convex one.</p>
+<p><span class="math display">\[\min_x L_1(x), \quad \text{st} \quad Ax = b\]</span></p>
+<p>It is now well-understood that under certain assumptions on <span class="math inline">\(A\)</span>, we can recover <span class="math inline">\(x\)</span> by solving this tractable convex-optimization problem rather than the original NP hard problem. Greedy strategy based solvers also exists which works even faster (though, according to Terry Tao blog, they do not guarentee the same performance as interior-point method based).</p>
+<h1 id="somewhat-formal-statement">Somewhat formal statement</h1>
+<p>If <span class="math inline">\(x_N\)</span> (size <span class="math inline">\(N\)</span>) is <span class="math inline">\(S-sparse\)</span> then an under-determined system <span class="math inline">\(A_{kN}x_{N} =b_k\)</span> -- where <span class="math inline">\(b\)</span> is vector of <span class="math inline">\(k\)</span> observations -- can be solved <em>exactly</em> given that <span class="math inline">\(A\)</span> (<strong>mesurement matrix</strong>) has following properties:</p>
+<ul>
+<li><span class="math inline">\(\left\Vert y\right\Vert^2 \sim = \left\Vert x \right\Vert ^2\)</span> where <span class="math inline">\(y = A x\)</span> for any sparse signal <span class="math inline">\(x\)</span> i.e application of measurements matrix does not change the length of sparse signal <span class="math inline">\(x\)</span> 'very much'. See Restricted Isometric Property in sec. 3.1 .</li>
+</ul>
+<p>Lets there is a sparse signal <span class="math inline">\(x\)</span> of length <span class="math inline">\(N\)</span>. Its sparse. We take a dot-product of x with a random vector <span class="math inline">\(A_i\)</span> of size N i.e. <span class="math inline">\(b_i = A_i * x\)</span>. We make <span class="math inline">\(k\)</span> such measurements. We can put all k <span class="math inline">\(A_i\)</span> into a matrix <span class="math inline">\(A\)</span> and represent the process by a linear system:</p>
+<p><span id="eq:underdetermined_system"><span class="math display">\[\begin{bmatrix} A_1 \\ A_2 \\ \vdots \\ A_k \end{bmatrix} * x = 
+\begin{bmatrix} b_1 \\ b_2 \\ \vdots \\ b_k \end{bmatrix} \qquad(1)\]</span></span></p>
+<p>Note that each <span class="math inline">\(A_i\)</span> has the dimension <span class="math inline">\(1 \times N\)</span>. We can rewrite eq. 1 as following:</p>
+<p><span id="eq:underdetermined_system_compact"><span class="math display">\[A x = b\qquad(2)\]</span></span> where dimension of <span class="math inline">\(A\)</span> are <span class="math inline">\(k \times N\)</span> and <span class="math inline">\(k &lt;&lt; N\)</span>. This is an under-determined system with the condition that <span class="math inline">\(x\)</span> is sparse. Can we recover <span class="math inline">\(x\)</span> (of size N) from b (of size k <span class="math inline">\(&lt;&lt;N\)</span>)?</p>
+<p>Figure fig. 1 shows a real system. Compressed sensing says that <span class="math inline">\(x\)</span> can be recovered by solving the following linear program.</p>
+<p><span id="eq:cs_linprog"><span class="math display">\[\min_x \left\Vert x \right\Vert_1 \; \text{given} \; Ax = b\qquad(3)\]</span></span></p>
+
+<h1 id="a-demonstration-using-python">A demonstration using Python</h1>
+<p>Data for fig. 2 is generated by script <code>./compressed_sensing.py</code> and for fig. 3, data is generated by script <code>./magic_reconstruction.py</code>. Both of these scripts also generate similar figures.</p>
+<p><strong>Dependencies</strong> In addition to <code>scipy</code>, <code>numpy</code>, and <code>matplotlib</code>, we also need <a href="https://github.com/nikcleju/pyCSalgos">pyCSalgo</a>. It is available via pip: <code>pip install pyCSalgo --user</code>.</p>
+<p>Code is available at <a href="https://github.com/dilawar/algorithms/tree/master/SignalProcessing/CS/">github</a></p>
+<h2 id="algorithm">Algorithm</h2>
+<ol style="list-style-type: decimal">
+<li><strong>input</strong> : sparse signal x of size N</li>
+<li>Generate a random matrix (<strong>measurement matrix</strong>) <span class="math inline">\(A\)</span> of size <span class="math inline">\(k\times N\)</span>.</li>
+<li>Make <span class="math inline">\(k\)</span> measurements of <span class="math inline">\(x\)</span> using <span class="math inline">\(A\)</span>. That is <span class="math inline">\(b = A x\)</span>. Note that each measurement of <span class="math inline">\(x\)</span> (i.e. entry of <span class="math inline">\(b\)</span>) is some linear combination of values of <span class="math inline">\(x\)</span> given by <span class="math inline">\(A_i x\)</span> where <span class="math inline">\(A_i\)</span> is ith row.</li>
+<li>Now find <span class="math inline">\(x\)</span> by solving <span class="math inline">\(\min_x \left\Vert x \right\Vert_1 \text{given}\; Ax=b\)</span>.</li>
+</ol>
+<p>For step 4, we are using function <code>l1eq_pd</code> from Python library <code>pyCSalgo</code>. This is reimplementation of <code>l1magic</code> routine written in Matlab by <a href="https://statweb.stanford.edu/~candes/l1magic/">Candes</a>. When <span class="math inline">\(k &gt;&gt; 2S\)</span> where <span class="math inline">\(S\)</span> is the sparsity of <span class="math inline">\(x\)</span>, we can recover <span class="math inline">\(x\)</span> quite well. In practice, <span class="math inline">\(k \ge 4S\)</span> almost always gives exact result.</p>
+<p>There are other algorithms available which works faster; they are based on <strong>greedy</strong> strategy. We are not discussing them here.</p>
+<h2 id="sparse-in-time-domain">Sparse in time domain</h2>
+<div class="figure">
+<img src="./figure_compressend_sensing.png" alt="Figure 1: x is the sparse signal of length 256. Using measurements matrix A, we made 64 random measurements of x namely b. The sparse solution of eq. 2 is the solution of \min_x \left\Vert x \right\Vert_1 \text{given}\; Ax =b." id="fig:system" />
+<p class="caption">Figure 1: <strong>x</strong> is the sparse signal of length 256. Using measurements matrix <strong>A</strong>, we made 64 random measurements of <span class="math inline">\(x\)</span> namely <strong>b</strong>. The sparse solution of eq. 2 is the solution of <span class="math inline">\(\min_x \left\Vert x \right\Vert_1 \text{given}\; Ax =b\)</span>.</p>
+</div>
+<p><strong>Solution</strong></p>
+<div class="figure">
+<img src="./figure_solution.png" alt="Figure 2: Solution by CS and original signal ." id="fig:cs_time_domain" />
+<p class="caption">Figure 2: Solution by CS and original signal .</p>
+</div>
+<h2 id="sparse-in-fourier-domain">Sparse in Fourier domain</h2>
+<div class="figure">
+<img src="./figure_compressend_sensing_DCT.png" alt="Figure 3: CS solution when signal is sparse in Forier domain. Note that we took 200 samples for a singal of size 2000. The recovery is pretty good." id="fig:cs_freq_domain" />
+<p class="caption">Figure 3: CS solution when signal is sparse in Forier domain. Note that we took 200 samples for a singal of size 2000. The recovery is pretty good.</p>
+</div>
+<h1 id="mathematical-definitions">Mathematical definitions</h1>
+<h2 id="sec:rip">Restricted isometric property (RIP)</h2>
+<p>Restricted isometric property (RIP) of a matrix <span class="math inline">\(A\)</span> is defined as the following.</p>
+<p>Given <span class="math inline">\(\delta_s \in (0,1)\)</span>, for any sub-matrix <span class="math inline">\(A_s\)</span> of <span class="math inline">\(A\)</span>, and for any sparse vector <span class="math inline">\(y\)</span>, if following holds</p>
+<p><span class="math display">\[ (1-\delta_s) \left\Vert y \right\Vert^2 \leq \left\Vert A_s y \right\Vert ^2
+\leq (1+\delta_s) \left\Vert y \right\Vert ^2 \]</span></p>
+<p>then matrix <span class="math inline">\(A\)</span> is said to satify <span class="math inline">\(s-\)</span>restricted isometric property with restricted isometric constant <span class="math inline">\(\delta_s\)</span>. <em>Note that a matrix A with such a property does not change the length of singal <span class="math inline">\(x\)</span> 'very much'</em>. This enables us to sense two different sparse signal <span class="math inline">\(x_1\)</span> and <span class="math inline">\(x_2\)</span> such that <span class="math inline">\(A x_1\)</span> and <span class="math inline">\(A x_2\)</span> are almost likely to be different.</p>
+<h1 id="sec:reference">References</h1>
+<p>To learn about compressed sensing, I recommend following articles</p>
+<ul>
+<li>A very good motivational article <a href="http://www.ams.org/samplings/math-history/hap7-pixel.pdf">www.ams.org/samplings/math-history/hap7-pixel.pdf</a> . (last accessed Wed 30 Aug 2017 11:14:35 AM IST)</li>
+<li>A nice tutorial using Matlab <a href="https://www.codeproject.com/Articles/852910/Compressed-Sensing-Intro-Tutorial-w-Matlab">CodeProject article</a>.</li>
+<li>Terry Tao Blog <a href="https://terrytao.wordpress.com/tag/compressed-sensing/">with tag Compressed sensing</a>.</li>
+</ul>
+<p>There are many many other great articles and papers on this subject. There are some dedicated webpages also.</p>
+</body>
+</html>
