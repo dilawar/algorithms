@@ -19,8 +19,8 @@ import sys
 import os
 import pickle
 from collections import Counter
-import huffman
-import bitarray
+import huffman      # pip install huffman
+import bitarray     # pip install bitarray
 import math
 
 
