@@ -116,14 +116,14 @@ made 64 random measurements of $x$ namely __b__. The sparse solution of
 __Solution__
 
 ![Solution by CS and original signal .
-](./figure_solution.png){#fig:cs_time_domain}
+](./figure_solution.png){#fig:cs_time_domain width=15cm}
 
 
 ## Sparse in Fourier domain
 
 ![CS solution when signal is sparse in Forier domain. Note that we took 200
 samples for a singal of size 2000. The recovery is pretty good.
-](./figure_compressend_sensing_DCT.png){#fig:cs_freq_domain}
+](./figure_compressend_sensing_DCT.png){#fig:cs_freq_domain width=15cm}
 
 
 # Mathematical definitions

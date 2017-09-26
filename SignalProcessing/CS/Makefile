@@ -8,7 +8,7 @@ compressed_sensing.pdf : compressed_sensing.pandoc $(IMAGES)
 	~/Scripts/pandoc2pdf.sh $<
 
 compressed_sensing.html : compressed_sensing.pandoc $(IMAGES)
-	~/Scripts/pandoc2wordpress.py $<
+	~/Scripts/pandoc2html.py $<
 
 %.png : %.py 
 	PYTHONPATH=~/Work/GITHUB/DILAWAR/pypgfplots/ python $<
