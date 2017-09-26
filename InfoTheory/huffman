@@ -60,7 +60,7 @@ def compress( txt, args ):
     outfile = '%s.dx' % args.file 
     with open( outfile, 'wb' ) as fo:
         revCodeBook = dict((v, k) for k, v in codebook.iteritems())
-        codebookStr = '%s' % revCodeBook
+        codebookStr = ('%s' % revCodeBook).replace( ' ', '' )
         fo.write( codebookStr.encode( ) )
         fo.write( delim_ )
         fo.write( enc_.tobytes( ) )
