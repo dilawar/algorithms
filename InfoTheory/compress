@@ -19,10 +19,20 @@ import sys
 import os
 import pickle
 from collections import Counter
-import huffman      # pip install huffman
-import bitarray     # pip install bitarray
 import math
 
+py = sys.version_info.major
+
+try:
+    import huffman      # pip install huffman
+    import bitarray     # pip install bitarray
+except ImportError as e:
+    import subprocess
+    subprocess.call( [ 'pip%d' % py, 'install', 'huffman', '--user' ] )
+    subprocess.call( [ 'pip%d' % py, 'install', 'bitarray', '--user' ] )
+
+import huffman     
+import bitarray   
 
 delim_ = b'__####__'
 
