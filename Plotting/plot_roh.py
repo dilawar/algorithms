@@ -24,6 +24,13 @@ mpl.rcParams['lines.linewidth'] = 1.0
 
 cols = [ 'Chromosome', 'Position', 'State', 'Quality' ]
 
+def find_connected_segments( data ):
+    # find indices where data is 1 
+    where1 = data[ data[ 'State' ] == 1 ]['Position'] 
+    wherediff = np.diff( where1.values )
+
+
+
 def plotROH( files, ax ):
     """Each file is plotted
     """
