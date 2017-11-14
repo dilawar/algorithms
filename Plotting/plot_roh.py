@@ -41,10 +41,11 @@ def plotROH( files, ax ):
                 maxlength = max( cdata[ 'Position' ] )
 
     print( 'INFO: Max row size %d' % maxlength )
-    img = np.zeros( shape = (len(chromosomes), maxlength ) )
+    # img = np.zeros( shape = (len(chromosomes), maxlength ) )
     for i, chromo in enumerate( chromosomes ):
         cdata = chromosomes[ chromo ]
-        ax.imshow( img )
+        whereOne = cdata[ cdata[ 'State' ] == 1 ]
+        ax.scatter( whereOne[ 'Position' ], [ i * 2 ] * len(whereOne) )
 
 def main( ):
     datadir = sys.argv[1]
