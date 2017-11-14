@@ -69,7 +69,7 @@ def compress( txt, args ):
     # the compression ration very much.
     outfile = '%s.dx' % args.file 
     with open( outfile, 'wb' ) as fo:
-        revCodeBook = dict((v, k) for k, v in codebook.iteritems())
+        revCodeBook = dict((v, k) for k, v in codebook.items())
         codebookStr = ('%s' % revCodeBook).replace( ' ', '' )
         fo.write( codebookStr.encode( ) )
         fo.write( delim_ )
