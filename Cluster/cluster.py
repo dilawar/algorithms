@@ -15,6 +15,7 @@ from collections import Counter
 import itertools
 import networkx as nx
 import numpy as np
+import re
 
 def build_flow_graph( vec, n ):
     g = nx.DiGraph( )
@@ -80,28 +81,74 @@ def swap( vec, x, y):
 def cost( veca, vecb ):
     return sum( abs(a[1]-b[1]) for a, b in zip( veca, vecb) )
 
-def dynamic_programming( vec, n ):
-    orig = vec[:]
-    alphas = [ x[0] for x in vec ]
-    freqs = Counter( alphas )
-    groups = { k : max(1,int(v/n)) for k, v in freqs.items() }
+def find_groups( string, alphas, n ):
+    ptrns = r'%s' % '|'.join( [ '%s{%d}'%(x,n) for x in alphas] ) 
+    pat = re.compile( r'%s' % ptrns )
+    return pat.findall( string )
 
-    vecb = swap( vec, 2, 5 )
-    a = cost( orig, vecb )
+def cost_of_moving( d ):
+    return d if d > 0 else d ** 2
+
+def print_result( res ):
+    s = ''.join( [ x[0] for x in res ] )
+    ks = ''.join( [ '%s' % x[2]['k'] for x in res ] )
+    print( s + "\n" + ks )
+
+def find_same_neighbour( i, c, values ):
+    res = [ ]
+    for j, v in enumerate(values[i+1:]):
+        if v[0] == c:
+            res.append( i+j+1 )
+        else:
+            break
+    for j, v in enumerate(reversed(values[:i])):
+        if v[0] == c:
+            res.append(i-j-1)
+        else:
+            break
+    return res
+
+def step( res ):
+    return res
+
+def recompute( values ):
+    for i, (c, l, attrib) in enumerate(values):
+        alreadySeen = [ ]
+        samec = find_same_neighbour(i, c, values)
+        attrib['k'] = len(samec)
+
+def dynamic_programming( vec, k ):
+    res = [ ]
+    for i, (c,l) in enumerate( vec ):
+        res.append( (c, l, dict(k=0)) )
+
+    orig = res[:]
+    recompute( res )
+    print_result( res )
+
+    step( res )
+    print( cost( orig, res ) )
+    # Now do the step.
 
 
-def cluster_data( vec, n, save = True ):
+def random_grouping( vec, n ):
+    for i, (v,oi) in enumerate( vec ):
+        xi = abs(i - oi)
+        print( xi, v, oi )
+
+
+def cluster_data( vec, k, save = True ):
     # Cluster the vector for size of chunk n.
     # First we build the flow graph.
     #g = build_flow_graph( vec, n )
     #sol = compute_solution( g )
     #if save:
     #    write_graph( g, 'network.dot' )
-    dynamic_programming( vec, n )
+    dynamic_programming( vec, k )
 
 def test( ):
     np.random.seed( 0 )
-    data = np.random.choice( list( 'ABCDE' ), 30, p = [0.2,0.2,0.2,0.1,0.3] )
+    data = np.random.choice( list( 'ABCDE' ), 100, p = [0.2,0.2,0.2,0.1,0.3] )
     data = list( zip( data, range(0,len(data) )))
     cluster_data( data, 3 )
 
