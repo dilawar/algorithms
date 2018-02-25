@@ -38,6 +38,9 @@ class Elem( ):
     def __hash__( self ):
         return hash( '%s.%d' % (self.id, self.pos) )
 
+def print_elems( elems ):
+    print( ''.join( [ '%s' % e for e in elems ] ) )
+
 def print_chunks( chunks ):
     strc = [ ''.join(map(str,x)) for x in chunks ]
     print( ' '.join( strc ) )
@@ -48,15 +51,21 @@ def find_replacement( char, vec ):
             return i
     return None
 
+def cost( elems ):
+    c = 0
+    for i, e in enumerate( elems ):
+        c += abs( i - e.pos )
+    return c
+
+
 def fix_chunk( chunk, vec, k, result ):
-    if len( vec ) < k or len(chunk) < k:
+    if len( vec ) < k:
         return result + chunk + vec
 
-    chars = chunk[:]
-    counts = [ (chunk.count(x),x) for x in set(chars) ]
+    counts = [ (chunk.count(x),x) for x in set(chunk) ]
     sorted( counts )
     charCount, baseChar = counts[0]
-    for i, c in enumerate( chars ):
+    for i, c in enumerate( chunk ):
         if c == baseChar:
             continue
 
@@ -68,32 +77,28 @@ def fix_chunk( chunk, vec, k, result ):
         except ValueError as e:
             # We have run out of elements. Result the current result.
             continue
-            #return result + chunk
 
     result += chunk
     chunk, vec = vec[:k], vec[k:]
-    print_chunks( [ result, chunk, vec ] )
     return fix_chunk( chunk, vec, k, result )
 
-def dynamic_programming( vec, k ):
+def cluster_data( vec, k ):
     res = [ ]
-
     chunk, rest = vec[:k], vec[k:]
     result = [ ]
-
-    result = fix_chunk( chunk, rest, k, result )
-    print( result )
-
-
-def cluster_data( vec, k, save = True ):
-    dynamic_programming( vec, k )
+    fix_chunk( chunk, rest, k, result )
+    return result
 
 def test( ):
     np.random.seed( 0 )
-    data = np.random.choice( list( 'ABCDE' ), 90, p = [0.2,0.2,0.2,0.1,0.3] )
+    data = np.random.choice( list( 'ABCDE' ), 150, p = [0.2,0.2,0.2,0.1,0.3] )
     data = list( zip( data, range(0,len(data) )))
     data = [ Elem(c,i) for c, i in data ]
-    cluster_data( data, 3 )
+    print_elems( data )
+    res = cluster_data( data, 3 )
+    print_elems(res)
+    c = cost(res)
+    print( 'Cost', c )
 
 if __name__ == '__main__':
     test( )
