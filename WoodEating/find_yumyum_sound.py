@@ -16,29 +16,38 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.io.wavfile
 import scipy.signal
-import soundfile
+import scipy
 
 rate_, data_ = 0, []
 
+def spectrogram( X ):
+    window_size = 2048          # 2048-sample fourier windows
+    stride = 512                # 512 samples between windows
+    wps = rate_/float(512) 
+    Xs = np.empty([int(10*wps),2048])
+    for i in range(Xs.shape[0]):
+        Xs[i] = np.abs(scipy.fft(X[i*stride:i*stride+window_size]))
+    return Xs
+
 def process( ):
     global rate_, data_
-    data_ = data_[::2]
     T = 1.0 / rate_
-    #  data_ = np.abs( data_ )
     tvec = np.arange(0, len(data_)) * T
-    f, t, Sxx = scipy.signal.spectrogram( data_, rate_ )
+    f, t, Sxx = scipy.signal.spectrogram( data_, fs=rate_)
     plt.subplot( 211 )
     plt.plot( tvec, data_ )
     plt.xlabel( 'Time (sec)' )
     plt.subplot( 212 )
-    plt.pcolormesh( t, f, Sxx)
+    Xs = spectrogram( data_ )
+    plt.imshow( Xs.T[0:150], interpolation = 'none', aspect = 'auto' )
     plt.savefig( 'summary.png' )
 
 def main():
     global rate_, data_
     global freq_
     filename = sys.argv[1]
-    data_, rate_ = soundfile.read( filename )
+    #  data_, rate_ = soundfile.read( filename )
+    rate_, data_ = scipy.io.wavfile.read( filename )
     assert len(data_) > 0
     process()
 
