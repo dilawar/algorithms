@@ -12,46 +12,115 @@ __status__           = "Development"
 
 import sys
 import os
-import matplotlib.pyplot as plt
 import numpy as np
 import scipy.io.wavfile
 import scipy.signal
 import scipy
+import cv2
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+mpl.style.use( 'bmh' )
+mpl.rcParams['text.usetex'] = True
+
 
 rate_, data_ = 0, []
+window_size_ = 2048
 
-def spectrogram( X ):
-    window_size = 2048          # 2048-sample fourier windows
-    stride = 512                # 512 samples between windows
-    wps = rate_/float(512) 
-    Xs = np.empty([int(10*wps),2048])
+def spectrogram_manual( X ):
+    global window_size_
+    stride = 512                
+    wps = rate_//stride
+    Xs = np.empty([int(10*wps), window_size_])
     for i in range(Xs.shape[0]):
-        Xs[i] = np.abs(scipy.fft(X[i*stride:i*stride+window_size]))
+        Xs[i] = np.abs(np.fft.fft(X[i*stride:i*stride+window_size_]))
     return Xs
 
-def process( ):
-    global rate_, data_
-    T = 1.0 / rate_
-    tvec = np.arange(0, len(data_)) * T
-    f, t, Sxx = scipy.signal.spectrogram( data_, fs=rate_)
-    plt.subplot( 211 )
-    plt.plot( tvec, data_ )
-    plt.xlabel( 'Time (sec)' )
-    plt.subplot( 212 )
-    Xs = spectrogram( data_ )
-    plt.imshow( Xs.T[0:150], interpolation = 'none', aspect = 'auto' )
+def spectrogram( X ):
+    return scipy.signal.spectrogram( X, fs=rate_, nperseg = 2**9)
+
+def gen_summary( data ):
+    plt.figure()
+    ax1 = plt.subplot( 311 )
+    ax1.autoscale( False )
+    tvec = np.arange(0, len(data)) * 1/rate_
+    ax1.plot( tvec, data )
+    ax1.set_title( 'Raw signal' )
+    ax1.set_xlabel( 'Time (sec)' )
+
+    ax2 = plt.subplot( 312 )
+    #  f, Pxx_den = scipy.signal.periodogram(data, rate_)
+    f, Pxx_den = scipy.signal.welch( data, rate_)
+    ax2.semilogy( f, Pxx_den  )
+    ax2.set_title( 'Power density (Welch)' )
+    ax2.set_xlabel( 'Freq (Hz)' )
+    ax2.set_ylabel( 'PSD[V**2/Hz]' )
+
+    # Filtered data.
+    ax3 = plt.subplot( 313, sharex=ax1 )
+    b, a= scipy.signal.butter( 4, 0.375, btype='low', analog=False)
+    sig = scipy.signal.filtfilt(b, a, data )
+    ax3.plot( tvec, sig)
+    ax3.set_title( 'Cutoff=15k' )
+    ax3.set_xlabel( 'Time (sec)' )
+
+    plt.tight_layout()
     plt.savefig( 'summary.png' )
+    plt.close()
+
+    return data
+
+def analyze( spec ):
+    frame = np.uint8( 255 * spec /spec.max())
+    #  frame = cv2.blur( spec, (9,9) )
+
+    u, s = frame.mean(), frame.std()
+    frame[ frame < u + s ] = 0
+
+    return frame
+
+
+def process( data ):
+    global rate_
+    T = 1.0 / rate_
+    tvec = np.arange(0, len(data)) * T
+
+    plt.figure( figsize=(12,8) )
+    plt.subplot( 311 )
+    plt.plot( tvec, data )
+    plt.xlabel( 'Time (sec)' )
+    plt.subplot( 312 )
+
+    # spectroram
+    #  Xs = spectrogram_manual( data )
+    #  spec = np.log10(Xs.T)
+    #  plt.imshow( spec, interpolation = 'none', aspect = 'auto')
+    #  plt.colorbar()
+    f, t, Xs = spectrogram(data)
+    spec = 1 + np.log10( Xs )
+    spec[spec<0] = 0
+    plt.pcolormesh( t, f, spec )
+    plt.colorbar()
+
+    # analyze spectogram
+    plt.subplot( 313 )
+    final = analyze( spec )
+    plt.imshow( final, interpolation = 'none', aspect = 'auto')
+    plt.colorbar()
+
+
+    plt.savefig( 'result.png' )
 
 def main():
-    global rate_, data_
+    global rate_
     global freq_
     filename = sys.argv[1]
     #  data_, rate_ = soundfile.read( filename )
-    rate_, data_ = scipy.io.wavfile.read( filename )
-    assert len(data_) > 0
-    process()
+    rate_, data = scipy.io.wavfile.read( filename )
+    assert len(data) > 0
+    data = gen_summary( data )
+    print( '--> Processing ...' )
+    process( data[:len(data)//4] )
 
 
 if __name__ == '__main__':
     main()
-
