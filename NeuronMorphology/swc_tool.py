@@ -13,38 +13,19 @@ __status__           = "Development"
 import sys
 import os
 import numpy as np
+from collections import defaultdict
 import networkx as nx
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+mpl.style.use( 'ggplot' )
+from mpl_toolkits.mplot3d import Axes3D
 
 args_ = None
-
-def data_for_cylinder_along_z(center_x,center_y,radius,height_z):
-    z = np.linspace(0, height_z, 50)
-    theta = np.linspace(0, 2*np.pi, 50)
-    theta_grid, z_grid=np.meshgrid(theta, z)
-    x_grid = radius*np.cos(theta_grid) + center_x
-    y_grid = radius*np.sin(theta_grid) + center_y
-    return x_grid,y_grid,z_grid
-
-def plot_cylinder( p0, p1, R, ax ):
-    # This is from https://stackoverflow.com/a/32383775/1805129
-    v = p1 - p0
-    mag = np.linalg.norm(v)
-    v = v / mag
-    not_v = np.array([1, 0, 0])
-    if (v == not_v).all():
-        not_v = np.array([0, 1, 0])
-    n1 = np.cross(v, not_v)
-    n1 /= np.linalg.norm(n1)
-    n2 = np.cross(v, n1)
-    t = np.linspace(0, mag, 100)
-    theta = np.linspace(0, 2 * np.pi, 100)
-    t, theta = np.meshgrid(t, theta)
-    X, Y, Z = [p0[i] + v[i] * t + R * np.sin(theta) * n1[i] + R * np.cos(theta) * n2[i] for i in [0, 1, 2]]
-    ax.plot_surface(X, Y, Z)
+soma_ = 0
 
 def parse_swc( swctxt ):
     global args_
-    g = nx.DiGraph()
+    S = defaultdict( list )
     for i, l in enumerate(swctxt.split('\n')):
         if not l.strip():
             continue
@@ -54,65 +35,57 @@ def parse_swc( swctxt ):
         if not len(fs) == 7:
             print( "[WARN ] Bad line: Ignored %d: %s" % (i,l) )
             continue
+        S[ int(fs[1]) ].append( fs )
+    return S
 
-        # id, type, x, y, z, radius, parent
-        pos = fs[2:5]
-        g.add_node( fs[0], pos=pos, type=fs[1], x=fs[2], y=fs[3], z=fs[4], radius=fs[5] 
-                , size = 10 * fs[5]
-                )
-        if fs[6] > 0:
-            g.add_edge( fs[6], fs[0] )
+def add_node( s, g ):
+    x, y, z = s[2:5]
+    g.add_node( int(s[0]), x=x, y=y, z=z, type=int(s[1]) )
+    if int(s[-1]) > 0:
+        g.add_edge( int(s[-1]), int(s[0]), radius = s[5] )
+
+def to_graphviz( S ):
+    global soma_
+    g = nx.DiGraph( )
+    # First add soma.
+    somas = S[1]
+    for s in somas:
+        print( 'Soma ', s )
+        if soma_ == 0:
+            soma_ = int(s[0])
+            add_node( s, g )
+
+    for k in S.keys():
+        if k == 1:
+            # already added.
+            continue
+        [ add_node(n, g) for n in S[k] ]
     return g
 
-def find_soma( g ):
-    somas = []
-    for n in g.nodes():
-        if int(g.node[n]['type']) == 1:
-            somas.append( n )
-    print( '[INFO] Found %d somas' % len(somas) )
-    return somas
-
-def plot_graph( g ):
+def plot_neuron( g, scale = 2, ax = None ):
     global args_
-    import matplotlib as mpl
-    import matplotlib.pyplot as plt
-    mpl.style.use( 'ggplot' )
-    #  mpl.rcParams['axes.linewidth'] = 0.2
-    #  mpl.rcParams['lines.linewidth'] = 1.0
-    from mpl_toolkits.mplot3d import Axes3D
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
+    if ax is None:
+        ax = fig.add_subplot(111, projection='3d')
+
     ax.grid( False )
-    #  ax.axis( 'off' )
-    pos = nx.get_node_attributes( g, 'pos' ).values()
-    X, Y, Z = zip(*pos)
-    size = list(nx.get_node_attributes( g, 'size' ).values())
-    ax.scatter( X, Y, Z, s = size, alpha = 0.7 )
+    for k in g:
+        X, Y, Z = [], [], []
+        alpha, m =  0.5, "."
+        if k == 1:
+            m = 'H'
+            alpha = 1.0
+        pts = [ x[2:5] for x in g[k] ]
+        X, Y, Z = zip(*pts)
+        ax.scatter( X, Y, Z, marker=m, alpha = alpha )
 
-    # plot somas.
-    somas = find_soma( g )
-    if len(somas) > 0:
-        a = g.node[somas[0]]
-        ax.scatter( a['x'], a['y'], a['z'], s=100)
-
-    outfile = '%s.graph.png' % args_.swc
-    plt.suptitle( args_.swc )
-    plt.savefig( outfile )
-    plt.close()
-    print( 'Morphology is saved to %s' % outfile )
-
-def show_incidence_matrix( g ):
+def show_incidence_matrix( g, ax ):
     global args_
-    import matplotlib.pyplot as plt
-    #  assert int(g.node[1]['type']) == 1, 'Got %s' % g.node[1]['type']
     im = nx.incidence_matrix( g )
-    img = np.uint8(im.todense())
-    plt.grid( False )
-    plt.imshow( img, aspect = 'auto' )
-    plt.savefig( '%s_incidence_matrix.png' % args_.swc )  
+    img = im.todense()
+    ax.grid( False )
+    ax.imshow( img, aspect = 'auto', interpolation = 'none' )
     np.savetxt( '%s_incidence_matrix.csv' % args_.swc, img, fmt='%d' )
-    print( 'Saved matrix to image and csv file' )
-    plt.close()
+    print( 'Saved matrix to csv file' )
 
 def main( args ):
     global args_
@@ -120,12 +93,22 @@ def main( args ):
     print( "[INFO ] Morphology file %s" % args.swc )
     with open( args_.swc, 'r' ) as f:
         txt = f.read()
-    g = parse_swc( txt )
+    S = parse_swc( txt )
+    g = to_graphviz( S )
+    plt.figure( figsize=(10, 5) )
+    ax1 = plt.subplot( 121, projection='3d')
+    ax2 = plt.subplot( 122 )
     if args_.plot:
-        plot_graph( g )
-
+        plot_neuron( S, scale = 2, ax = ax1 )
     if args_.incidence_matrix:
-        show_incidence_matrix( g )
+        show_incidence_matrix( g, ax2 )
+
+    plt.tight_layout( )
+    outfile = '%s.output.png' % args_.swc
+    plt.savefig( outfile )
+    print( "[INFO ] Saved to %s" % outfile )
+    plt.close()
+    
 
 if __name__ == '__main__':
     import argparse
