@@ -80,7 +80,22 @@ def plot_graph( g ):
     outfile = '%s.graph.png' % args_.swc
     plt.suptitle( args_.swc )
     plt.savefig( outfile )
+    plt.close()
     print( 'Morphology is saved to %s' % outfile )
+
+def show_incidence_matrix( g ):
+    global args_
+    import matplotlib.pyplot as plt
+    assert int(g.node[1]['type']) == 1, 'Got %s' % g.node[1]['type']
+    im = nx.incidence_matrix( g )
+    img = im.todense()
+
+    plt.grid( False )
+    plt.imshow( img, aspect = 'auto' )
+    plt.savefig( '%s_incidence_matrix.png' % args_.swc )  
+    np.savetxt( '%s_incidence_matrix.csv' % args_.swc, img )
+    print( 'Saved matrix to image and csv file' )
+    plt.close()
 
 def main( args ):
     global args_
@@ -91,6 +106,9 @@ def main( args ):
     g = parse_swc( txt )
     if args_.plot:
         plot_graph( g )
+
+    if args_.incidence_matrix:
+        show_incidence_matrix( g )
 
 if __name__ == '__main__':
     import argparse
@@ -105,6 +123,10 @@ if __name__ == '__main__':
         , required = False, action = 'store_true'
         , help = 'Plot morphology using matplotlib (only rough morphology is '
                 ' plotted for quick overview.)'
+        )
+    parser.add_argument('--incidence-matrix', '-im'
+        , required = False, action = 'store_true'
+        , help = 'Show incidence matrix.'
         )
     class Args: pass 
     args = Args()
