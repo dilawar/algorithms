@@ -56,19 +56,29 @@ def parse_swc( swctxt ):
             continue
 
         # id, type, x, y, z, radius, parent
-        pos = fs[1:4]
-        #  print(pos)
-        g.add_node( fs[0], pos=pos, type=fs[1], x=fs[2], y=fs[3], z=fs[4], radius=fs[5] )
-        g.add_edge( fs[6], fs[0] )
+        pos = fs[2:5]
+        g.add_node( fs[0], pos=pos, type=fs[1], x=fs[2], y=fs[3], z=fs[4], radius=fs[5] 
+                , size = 10 * fs[5]
+                )
+        if fs[6] > 0:
+            g.add_edge( fs[6], fs[0] )
     return g
+
+def find_soma( g ):
+    somas = []
+    for n in g.nodes():
+        if int(g.node[n]['type']) == 1:
+            somas.append( n )
+    print( '[INFO] Found %d somas' % len(somas) )
+    return somas
 
 def plot_graph( g ):
     global args_
     import matplotlib as mpl
     import matplotlib.pyplot as plt
     mpl.style.use( 'ggplot' )
-    mpl.rcParams['axes.linewidth'] = 0.2
-    mpl.rcParams['lines.linewidth'] = 1.0
+    #  mpl.rcParams['axes.linewidth'] = 0.2
+    #  mpl.rcParams['lines.linewidth'] = 1.0
     from mpl_toolkits.mplot3d import Axes3D
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
@@ -76,7 +86,15 @@ def plot_graph( g ):
     #  ax.axis( 'off' )
     pos = nx.get_node_attributes( g, 'pos' ).values()
     X, Y, Z = zip(*pos)
-    ax.scatter( X, Y, Z, s = 2 )
+    size = list(nx.get_node_attributes( g, 'size' ).values())
+    ax.scatter( X, Y, Z, s = size, alpha = 0.7 )
+
+    # plot somas.
+    somas = find_soma( g )
+    if len(somas) > 0:
+        a = g.node[somas[0]]
+        ax.scatter( a['x'], a['y'], a['z'], s=100)
+
     outfile = '%s.graph.png' % args_.swc
     plt.suptitle( args_.swc )
     plt.savefig( outfile )
@@ -86,14 +104,13 @@ def plot_graph( g ):
 def show_incidence_matrix( g ):
     global args_
     import matplotlib.pyplot as plt
-    assert int(g.node[1]['type']) == 1, 'Got %s' % g.node[1]['type']
+    #  assert int(g.node[1]['type']) == 1, 'Got %s' % g.node[1]['type']
     im = nx.incidence_matrix( g )
-    img = im.todense()
-
+    img = np.uint8(im.todense())
     plt.grid( False )
     plt.imshow( img, aspect = 'auto' )
     plt.savefig( '%s_incidence_matrix.png' % args_.swc )  
-    np.savetxt( '%s_incidence_matrix.csv' % args_.swc, img )
+    np.savetxt( '%s_incidence_matrix.csv' % args_.swc, img, fmt='%d' )
     print( 'Saved matrix to image and csv file' )
     plt.close()
 
