@@ -13,6 +13,9 @@ import sys
 import os
 import numpy as np
 
+def _mult_permutations( p1, p2 ):
+
+
 def _generate_inverse( R, PS ):
     collect = [ ]
     S = R.copy()
@@ -70,21 +73,41 @@ def test_random( ):
         a = np.random.rand( 10, 10 )
         ainv1 = np.linalg.inv( a )
         ainv2 = invert( a )
-        #  print( 'Numpy solution' )
-        #  print( ainv1)
-        #  print( 'Our solution' )
-        #  print( ainv2 )
         assert np.isclose( ainv1, ainv2 ).all()
 
 def benchmark( ):
     import time
-    for i in range(10, 100, 10):
+    import matplotlib.pyplot as plt
+    print( 'Size, Time' )
+    X, Y, Ynumpy = [], [], []
+    for i in np.linspace(10, 400, 10):
+        ts, ts2 = [], []
         t = time.time()
-        invert( np.random.rand(i, i) )
+        invert( np.random.rand(int(i),int(i)) )
         s = time.time() - t
-        print( "Size is %d. Time %g" % (i,s) )
+        ts.append( s )
+
+        t = time.time()
+        np.linalg.inv( np.random.rand(int(i),int(i)) )
+        s = time.time() - t
+        ts2.append( s )
+
+        print( "%s,%g,%g" % (i, np.mean(ts), np.std(ts)) )
+        X.append( i )
+        Y.append( ts )
+        Ynumpy.append( ts2 )
+
+    ax = plt.subplot( 111 )
+    ax1 = ax.twinx()
+    ax.plot( X, Y, '-o', color = 'blue' )
+    ax.set_ylabel( 'ColOp (blue)' )
+    ax1.plot( X, Ynumpy, '-x', color = 'red' )
+    ax1.set_ylabel( 'numpy (red)' )
+    plt.xlabel( 'Size' )
+    plt.savefig( 'benchmark.png' )
+
 
 if __name__ == '__main__':
     test()
+    test_random()
     benchmark( )
-    #  test_random()
