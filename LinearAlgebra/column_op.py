@@ -16,9 +16,10 @@ import numpy as np
 def _generate_inverse( R, PS ):
     collect = [ ]
     S = R.copy()
-    for c, r, s in PS:
+    for ps in PS:
         a = np.eye( R.shape[0] )
-        a[r,c] = s
+        for c, r, s in ps:
+            a[r,c] = s
         collect.append(a)
 
     res = np.eye( R.shape[0] )
@@ -30,6 +31,7 @@ def _generate_inverse( R, PS ):
         res[:,i] = res[:,i] / R[i,i]
     return res
 
+
 def invert( mat ):
     A = mat.copy()
     N, M = A.shape 
@@ -37,6 +39,7 @@ def invert( mat ):
     PS = [ ]
     cost = 0
     for i in range( N ):
+        ps = []
         p = A[i, i]
         for j in range( N ):
             if i == j:
@@ -44,7 +47,8 @@ def invert( mat ):
             s = - A[i,j] / p
             # do the column operations.
             A[:,j] += s * A[:,i]
-            PS.append( (j, i, s) )
+            ps.append( (j, i, s) )
+        PS.append( ps )
     invA = _generate_inverse( A, PS )
     return invA
 
