@@ -20,11 +20,6 @@ def _generate_inverse( R, PS ):
         a = np.eye( R.shape[0] )
         a[r,c] = s
         collect.append(a)
-        #  print( 'a' )
-        #  print( a )
-        #  print( 'S' )
-        #  S = np.dot(S,a )
-        #  print( S )
 
     res = np.eye( R.shape[0] )
     for a in reversed(collect):
@@ -65,5 +60,27 @@ def test():
     print( 'inverse' )
     print( ainv )
 
+def test_random( ):
+    """docstring for test_random"""
+    for i in range(100):
+        a = np.random.rand( 10, 10 )
+        ainv1 = np.linalg.inv( a )
+        ainv2 = invert( a )
+        #  print( 'Numpy solution' )
+        #  print( ainv1)
+        #  print( 'Our solution' )
+        #  print( ainv2 )
+        assert np.isclose( ainv1, ainv2 ).all()
+
+def benchmark( ):
+    import time
+    for i in range(10, 100, 10):
+        t = time.time()
+        invert( np.random.rand(i, i) )
+        s = time.time() - t
+        print( "Size is %d. Time %g" % (i,s) )
+
 if __name__ == '__main__':
     test()
+    benchmark( )
+    #  test_random()
