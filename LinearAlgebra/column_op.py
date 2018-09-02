@@ -14,21 +14,13 @@ import os
 import helper
 import numpy as np
 
-def _generate_inverse_fast(R, PS):
-    S = R.copy()
-    T = np.eye( S.shape[0] )
-    for ps in PS:
-        for p in ps:
-            T = helper._multiply_perm(T, p)
-    print( T )
-    return T
-
-
 def _generate_inverse( R, PS ):
     collect = [ ]
     S = R.copy()
     for ps in PS:
         a = np.eye( R.shape[0] )
+        for p in ps:
+            S = helper.apply_elementary_col_operation(S, p)
         for c, r, s in ps:
             a[r,c] = s
         collect.append(a)
@@ -36,6 +28,8 @@ def _generate_inverse( R, PS ):
     res = np.eye( R.shape[0] )
     for a in reversed(collect):
         res = np.dot( a, res )
+
+    assert np.isclose( res, S ).all(), (S, res)
 
     # Scale the columns.
     for i in range(R.shape[0]):
