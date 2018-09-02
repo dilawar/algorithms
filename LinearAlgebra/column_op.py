@@ -11,9 +11,17 @@ __status__           = "Development"
 
 import sys
 import os
+import helper
 import numpy as np
 
-def _mult_permutations( p1, p2 ):
+def _generate_inverse_fast(R, PS):
+    S = R.copy()
+    T = np.eye( S.shape[0] )
+    for ps in PS:
+        for p in ps:
+            T = helper._multiply_perm(T, p)
+    print( T )
+    return T
 
 
 def _generate_inverse( R, PS ):
@@ -33,7 +41,6 @@ def _generate_inverse( R, PS ):
     for i in range(R.shape[0]):
         res[:,i] = res[:,i] / R[i,i]
     return res
-
 
 def invert( mat ):
     A = mat.copy()

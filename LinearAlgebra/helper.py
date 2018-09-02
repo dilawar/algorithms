@@ -27,28 +27,35 @@ def apply_permutation( a, p):
     b[:,c1] += s*b[:,c2]
     return b
 
-def _multiply_perm( mat, p ):
+def apply_elementary_col_operation( mat, p ):
     T = mat.copy()
     q, p, s = p
     for i in range(T.shape[0]):
         T[i,q] += T[i,p]*s
     return T
 
-def test_a( ):
+def apply_elementary_col_operations( mat, ps ):
+    T = mat.copy()
+    for p in ps:
+        T = apply_elementary_col_operation(T, p)
+    return T
+
+def test_apply_elementary_col_operation( ):
     # Test multiplication by elementary column op.
-    t = np.matrix( '1 2 3 4 0; 0 1 0 0 0; 0 0 1 0 0; 0 0 0 1 0; 0 0 0 0 1', dtype=np.float )
-    p = (2, 1, -1.5 )
-    print( t )
-    t1 = _multiply_perm( t, p )
-    pm = perm_to_mat( p, t.shape[0] )
-    expected = np.dot(t, pm)
-    print( p )
-    print( 'ElColOp Mat ' )
-    print( pm )
-    print( 'Got' )
-    print( t1 )
-    print( 'Expected ' )
-    print( expected )
+    for i in range(10):
+        t = np.random.rand(4, 4)
+        p1 = (2, 1, -1.5 )
+        p2 = (1, 3, 0.5)
+        t1 = apply_elementary_col_operation( t, p1 )
+        t2 = apply_elementary_col_operation( t1, p2)
+        pm1 = perm_to_mat( p1, t.shape[0] )
+        pm2 = perm_to_mat( p2, t.shape[0] )
+        expected1 = np.dot( t, pm1 )
+        expected2 = np.dot(t1, pm2 )
+        assert np.isclose( t1, expected1 ).all()
+        assert np.isclose( t2, expected2 ).all()
+    fname = sys._getframe(  ).f_code.co_name
+    print( '[INFO] %s ' % fname + '%30s' % 'PASSED' )
 
 
 def gen_permutations_mat( PS, N ):
@@ -57,8 +64,7 @@ def gen_permutations_mat( PS, N ):
     print( "[INFO ] Generating permuation matrix out of %s" % PS ) 
     T = np.eye( N )
     for p in PS:
-        T = _multiply_perm(T, p)
-        print( T )
+        T = apply_elementary_col_operation(T, p)
     return T
 
 def test_perm_to_mat( a ):
@@ -75,35 +81,23 @@ def test_perm_to_mat( a ):
 
 def test_fast_perm_mult( A ):
     print( '===== Test multiplication of permutations matrices' )
-    a = A.copy()
     p1 = (1,2,-1)
     p2 = (2,1,-2)
     p3 = (2,1,-0.5)
-    pS = []
-    for p in [p1, p2, p3]:
-        print( a )
-        pm = perm_to_mat(p, 3)
-        pS.append( pm )
-        a = np.dot(a, pm)
+    ps = [p1, p2, p3]
+    mats = [ perm_to_mat(p, A.shape[0]) for p in ps ]
+    r1 = apply_elementary_col_operations(A, ps)
+    r2 = A.copy()
+    for m in mats:
+        r2 = np.dot(r2, m)
+    assert np.isclose( r1, r2 ).all()
 
-    # multiply as pS
-    t = np.eye(A.shape[0])
-    for p in pS:
-        t = np.dot(t, p)
-    a1 = np.dot(A, t)
-    assert np.isclose(a, a1).all()
-    print( 'Final answer after all application of permutations' )
-    print( a )
-    # Now generate permutation matrix
-    P = gen_permutations_mat( [p1, p2, p3], 3 )
-    assert np.isclose( P, t ).all(), P
-
-def test( ):
-    a = np.matrix( '1 2 3; 1 1 3; 9 2 4' )
+def test_other( ):
+    a = np.matrix( '1.0 2.0 3.0; 1 1 3; 9 2 4' )
     test_perm_to_mat( a )
     test_fast_perm_mult( a )
 
 if __name__ == '__main__':
-    test_a( )
-    #  test()
+    test_apply_elementary_col_operation( )
+    test_other()
 
