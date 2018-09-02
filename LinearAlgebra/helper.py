@@ -45,7 +45,7 @@ def test_apply_elementary_col_operation( ):
     for i in range(10):
         t = np.random.rand(4, 4)
         p1 = (2, 1, -1.5 )
-        p2 = (1, 3, 0.5)
+        p2 = (2, 3, 0.5)
         t1 = apply_elementary_col_operation( t, p1 )
         t2 = apply_elementary_col_operation( t1, p2)
         pm1 = perm_to_mat( p1, t.shape[0] )
