@@ -42,7 +42,6 @@ void apply_column_operations( Eigen::MatrixXd &m, const std::vector<column_op_t>
 /* ----------------------------------------------------------------------------*/
 void invert( Eigen::MatrixXd& m )
 {
-    Eigen::MatrixXd temp = m;
     const size_t N = m.rows();
 
     // Keep the column operations in this vector.
@@ -80,6 +79,41 @@ void invert( Eigen::MatrixXd& m )
         m.col( i ) /= diag[i];
         m.row( i ) /= diag[i];
     }
+}
+
+Eigen::MatrixXd invert2( Eigen::MatrixXd& m )
+{
+    const size_t N = m.rows();
+    // Keep the column operations in this vector.
+    std::vector< Eigen::MatrixXd > colOpMap(N);
+
+    // We have to turn the matrix to column reduced echleon form. 
+    for (size_t i = 0; i < N; i++) 
+    {
+        double p = m(i, i);
+        if( p == 0.0 )
+            continue;
+
+        Eigen::MatrixXd e = Eigen::MatrixXd::Identity(N, N);
+        for (size_t ii = 0; ii < N; ii++) 
+        {
+            if( i == ii )
+                continue;
+            double s = - m(i,ii) / m(i,i);
+            if( s == 0.0)
+                continue;
+            assert( s != 0 );
+            m.col(ii) += s * m.col(i);
+            e(i, ii) = s;
+        }
+        colOpMap[i] = e;
+    }
+
+    Eigen::MatrixXd res = Eigen::MatrixXd::Identity(N, N);
+    for ( auto i = colOpMap.begin(); i != colOpMap.end(); i++ )
+        res *= *i;
+
+    return res;
 }
 
 

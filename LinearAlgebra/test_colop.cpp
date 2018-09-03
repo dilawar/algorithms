@@ -38,10 +38,14 @@ int test( )
     }
 
     // Invert a matrix.
-    MatrixXd m11 = m1;
-    invert( m11 );
+    auto m11 = invert2( m1 );
     cout << "testing inverse ";
-    assert( m11 == m1.inverse() );
+    if( m11 != m1.inverse() )
+    {
+        cout << "Expected\n" << m1.inverse() << endl
+            << "Got\n" << m11 << endl;
+        throw;
+    }
     cout << "     ... PASSED!" << endl;
     
     return 0;
