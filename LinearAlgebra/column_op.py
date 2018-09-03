@@ -70,7 +70,6 @@ def invert( mat ):
 
 def test():
     a = np.matrix( '1 2 1; 3 4.0 9;1 1 2.0' )
-    #  a = np.matrix( '1 2; 3 4.0' )
     b = invert( a )
     print( 'Our result == ' )
     print( b )
