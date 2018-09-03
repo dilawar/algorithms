@@ -19,19 +19,21 @@ using namespace Eigen;
 int main(int argc, const char *argv[])
 {
     MatrixXd m(4,4);
-    m << 1, 2, 3, 4
-        , 0, 1, 0, 0
-        , 0, 0, 1, 0
-        , 0, 0, 0, 1;
+    m << 1,2,3,4, 0,1,0,0, 3,0,1,0 ,0,0,0,1;
 
     // A column operator.
     column_op_t p1 = {2, 1, -1.5 };
+    column_op_t p2 = {0, 2, -0.5 };
 
-    cout << "Matrix before " << endl << m << endl;
-    apply_column_operation( m, p1 );
-    cout << "Matrix after " << endl << m << endl;
+    apply_column_operations( m, { p1, p2 } );
+    MatrixXd expected(4,4);
+    expected << 1,2,0,4,  0.75,1,-1.5,0,  2.5,0,1,0,  0,0,0,1;
 
-
+    if( expected != m )
+    {
+        cerr << "Warn: test failed" << endl;
+        cerr << "Got " << endl << m << endl << " expected " << endl << expected << endl;
+    }
     
     return 0;
 }

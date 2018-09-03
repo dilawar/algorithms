@@ -12,6 +12,9 @@
 
 #define COLUMN_OP_H
 
+#include <vector>
+#include <tuple>
+
 typedef std::tuple<size_t, size_t, double> column_op_t;
 
 void apply_column_operation( Eigen::MatrixXd & m, const column_op_t &p )
@@ -20,6 +23,12 @@ void apply_column_operation( Eigen::MatrixXd & m, const column_op_t &p )
     size_t c2 = std::get<1>(p);
     double s = std::get<2>(p);
     m.col(c1) += s * m.col(c2);
+}
+
+void apply_column_operations( Eigen::MatrixXd &m, const std::vector<column_op_t> &ps)
+{
+    for(auto &p : ps)
+        apply_column_operation(m, p);
 }
 
 
