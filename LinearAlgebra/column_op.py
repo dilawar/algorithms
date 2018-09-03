@@ -12,9 +12,7 @@ __status__           = "Development"
 import sys
 import os
 import helper
-import tinynumpy as np
-import tinyrandom  as trandom
-
+import numpy as np
 
 def _generate_inverse( R, PS ):
     # This is slow version. Good for testing new implementations.
@@ -85,7 +83,7 @@ def test():
 def test_random( ):
     """docstring for test_random"""
     for i in range(100):
-        a = trandom.rand( 10, 10 )
+        a = np.random.rand( 10, 10 )
         ainv1 = np.linalg.inv( a )
         ainv2 = invert( a )
         assert np.isclose( ainv1, ainv2 ).all()
