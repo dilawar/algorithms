@@ -57,10 +57,11 @@ def invert( mat ):
     for i in range( N ):
         ps = []
         p = A[i, i]
-        for j in range( N ):
+        for j in range(i,  N ):
             if i == j:
                 continue
             s = - A[i,j] / p
+            print( i, j, s )
             # do the column operations.
             A[:,j] += s * A[:,i]
             ps.append( (j, i, s) )

@@ -20,6 +20,7 @@ int main(int argc, const char *argv[])
 {
     MatrixXd m(4,4);
     m << 1,2,3,4, 0,1,0,0, 3,0,1,0 ,0,0,0,1;
+    auto m1 = m;
 
     // A column operator.
     column_op_t p1 = {2, 1, -1.5 };
@@ -34,6 +35,9 @@ int main(int argc, const char *argv[])
         cerr << "Warn: test failed" << endl;
         cerr << "Got " << endl << m << endl << " expected " << endl << expected << endl;
     }
+
+    // Invert a matrix.
+    invert( m1 );
     
     return 0;
 }

@@ -31,6 +31,33 @@ void apply_column_operations( Eigen::MatrixXd &m, const std::vector<column_op_t>
         apply_column_operation(m, p);
 }
 
+/* --------------------------------------------------------------------------*/
+/**
+ * @Synopsis  Invert a matrix in place.
+ *
+ * @Param m  Matrix.
+ */
+/* ----------------------------------------------------------------------------*/
+void invert( Eigen::MatrixXd& m )
+{
+    std::cout << "Inverting ... \n" << m << std::endl;
+    const size_t N = m.rows();
+
+    // Keep the column operations in this vector.
+    vector<perm_to_mat> vecColOps;
+    for (size_t i = 0; i < N; i++) 
+    {
+        double p = m(i, i);
+        if( p == 0.0 )
+            continue;
+
+        for (size_t ii = i; ii < N; ii++) 
+        {
+        }
+    }
+
+
+}
 
 
 #endif /* end of include guard: COLUMN_OP_H */
