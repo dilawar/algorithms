@@ -10,13 +10,14 @@
 
 #include <iostream>
 #include <tuple>
+#include <ctime>
 #include <Eigen/Dense>
 #include "column_op.hpp"
 
 using namespace std;
 using namespace Eigen;
 
-int main(int argc, const char *argv[])
+int test( )
 {
     MatrixXd m(4,4);
     m << 1,2,3,4, 0,1,0,0, 3,0,1,0 ,0,0,0,1;
@@ -37,7 +38,48 @@ int main(int argc, const char *argv[])
     }
 
     // Invert a matrix.
-    invert( m1 );
+    MatrixXd m11 = m1;
+    invert( m11 );
+    cout << "testing inverse ";
+    assert( m11 == m1.inverse() );
+    cout << "     ... PASSED!" << endl;
     
+    return 0;
+}
+
+void benchmark( )
+{
+    for (size_t i = 1; i < 12; i++) 
+    {
+        const size_t N = (size_t)pow(2, i);
+        Eigen::MatrixXd m = MatrixXd::Random(N, N);
+
+        clock_t t0 = clock();
+        auto mInv = m.inverse();
+        clock_t t1 = clock();
+        double eigenT = (double)(t1-t0)/CLOCKS_PER_SEC;
+
+        MatrixXd m1(m);
+        t0 = clock();
+        invert( m1 );
+        t1 = clock();
+
+        if( (m1-mInv).norm() > 1e-6 )
+        {
+            cout << "Got " << endl << m1 << endl;
+            cout << "Expected " << endl << mInv << endl;
+            cout<< "Error : " << endl << (m1 - mInv).norm() << endl;
+            throw;
+        }
+
+        cout << N << ' ' << (double)(t1-t0) / CLOCKS_PER_SEC <<  ' ' << eigenT << endl;
+    }
+
+}
+
+int main(int argc, const char *argv[])
+{
+    test( );
+    benchmark( );
     return 0;
 }

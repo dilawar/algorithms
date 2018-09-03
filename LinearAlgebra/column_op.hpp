@@ -43,7 +43,6 @@ void apply_column_operations( Eigen::MatrixXd &m, const std::vector<column_op_t>
 void invert( Eigen::MatrixXd& m )
 {
     Eigen::MatrixXd temp = m;
-    std::cout << "Inverting ... \n" << m << std::endl;
     const size_t N = m.rows();
 
     // Keep the column operations in this vector.
