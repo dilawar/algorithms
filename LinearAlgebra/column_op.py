@@ -39,7 +39,7 @@ def _generate_inverse_fast( R, PS ):
     # Some optimization can be done here.
     for ps in PS:
         for p in ps:
-            S = helper.apply_elementary_col_operation(S, p)
+            helper.apply_elementary_col_operation(S, p)
 
     # Scale the columns.
     for i in range(R.shape[0]):
@@ -48,8 +48,7 @@ def _generate_inverse_fast( R, PS ):
 
     return S
 
-def invert( mat ):
-    A = mat.copy()
+def invert( A ):
     N, M = A.shape 
     assert N == M
     PS = [ ]
@@ -71,13 +70,14 @@ def invert( mat ):
 
 def test():
     a = np.matrix( '1 2 1; 3 4.0 9;1 1 2.0' )
-    b = invert( a )
-    print( 'Our result == ' )
-    print( b )
-    print( 'Numpy result == ' )
+    print( 'Original matrix' )
     print( a )
-    ainv = np.linalg.inv( a )
-    print( 'inverse' )
+    a1 = a.copy()
+    invert( a )
+    print( 'Our result == ' )
+    print( a )
+    print( 'Numpy result' )
+    ainv = np.linalg.inv( a1 )
     print( ainv )
 
 def test_random( ):
@@ -122,5 +122,5 @@ def benchmark( ):
 
 if __name__ == '__main__':
     test()
-    test_random()
-    benchmark( )
+    #  test_random()
+    #  benchmark( )

@@ -15,6 +15,8 @@
 #include <vector>
 #include <tuple>
 
+using namespace std;
+
 typedef std::tuple<size_t, size_t, double> column_op_t;
 
 void apply_column_operation( Eigen::MatrixXd & m, const column_op_t &p )
@@ -40,23 +42,45 @@ void apply_column_operations( Eigen::MatrixXd &m, const std::vector<column_op_t>
 /* ----------------------------------------------------------------------------*/
 void invert( Eigen::MatrixXd& m )
 {
+    Eigen::MatrixXd temp = m;
     std::cout << "Inverting ... \n" << m << std::endl;
     const size_t N = m.rows();
 
     // Keep the column operations in this vector.
-    vector<perm_to_mat> vecColOps;
+    std::vector< column_op_t > vecColOps;
+    std::vector<double> diag(N, 1);
+
+    // We have to turn the matrix to column reduced echleon form. 
     for (size_t i = 0; i < N; i++) 
     {
         double p = m(i, i);
         if( p == 0.0 )
             continue;
 
-        for (size_t ii = i; ii < N; ii++) 
+        for (size_t ii = 0; ii < N; ii++) 
         {
+            if( i == ii )
+                continue;
+            double s = - m(i,ii) / m(i,i);
+            if( s == 0.0)
+                continue;
+            assert( s != 0 );
+            m.col(ii) += s * m.col(i);
+            vecColOps.push_back( {ii, i, s} );
         }
+        diag[i] = m(i, i);
     }
 
-
+    apply_column_operations( m, vecColOps );
+    
+    // rescale the column and rows depending on the diagonal.
+    for( size_t i = 0; i < diag.size(); i++ )
+    {
+        if( diag[i] == 1 )
+            continue;
+        m.col( i ) /= diag[i];
+        m.row( i ) /= diag[i];
+    }
 }
 
 
