@@ -66,6 +66,7 @@ void invert( Eigen::MatrixXd& m )
             m.col(ii) += s * m.col(i);
             vecColOps.push_back( {ii, i, s} );
         }
+
         diag[i] = m(i, i);
     }
 
@@ -81,13 +82,41 @@ void invert( Eigen::MatrixXd& m )
     }
 }
 
-Eigen::MatrixXd invert2( Eigen::MatrixXd& m )
+/* --------------------------------------------------------------------------*/
+/**
+ * @Synopsis  Invert a matrix using elementary column operations.
+ *
+ * @Param m   Given matrix.
+ *
+ * @Returns Inverted matrix.
+ *
+ * A = IP1 P2 P3 .. Pn
+ * A^-1 = Pn^-1 Pn-1^-1 .. P1^-1 
+ *
+ * Where Pn^-1 is Pn[i,j] = -P[i,j] /= 0 e.g.
+ *     P                            p^-1
+ *  [[ 1, -2, -3, -4],           [[1., 2., 3., 4.],
+ *    [ 0,  1,  0,  0],            [0., 1., 0., 0.],
+ *    [ 0,  0,  1,  0],            [0., 0., 1., 0.],
+ *    [ 0,  0,  0,  1]]            [0., 0., 0., 1.]]            
+ * 
+ * NOTE: We use the new method.
+ *          D = A P1 P2 where S is a diagnonal matrix.
+ *
+ *          D P2^-1 P1^-1 = A 
+ *          P1 P2 D^-1  = A^-1
+ *
+ *      D^-1 is cheap to compute since it is a diagonal matrix. We are left with 3 multiplications.
+ *
+ */
+/* ----------------------------------------------------------------------------*/
+Eigen::MatrixXd invert2( const Eigen::MatrixXd& mat )
 {
+    Eigen::MatrixXd m(mat);
     const size_t N = m.rows();
-    // Keep the column operations in this vector.
-    std::vector< Eigen::MatrixXd > colOpMap(N);
 
     // We have to turn the matrix to column reduced echleon form. 
+    Eigen::MatrixXd res = Eigen::MatrixXd::Identity(N, N);
     for (size_t i = 0; i < N; i++) 
     {
         double p = m(i, i);
@@ -106,13 +135,15 @@ Eigen::MatrixXd invert2( Eigen::MatrixXd& m )
             m.col(ii) += s * m.col(i);
             e(i, ii) = s;
         }
-        colOpMap[i] = e;
+
+        res *= e;
     }
 
-    Eigen::MatrixXd res = Eigen::MatrixXd::Identity(N, N);
-    for ( auto i = colOpMap.begin(); i != colOpMap.end(); i++ )
-        res *= *i;
-
+    for (size_t i = 0; i < N; i++) 
+    {
+        if( m(i,i) != 1.0 && m(i,i) != 0 )
+            res.col(i) /= m(i,i);
+    }
     return res;
 }
 
