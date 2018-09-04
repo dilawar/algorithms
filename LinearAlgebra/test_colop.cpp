@@ -37,7 +37,8 @@ int test( )
     }
 
     // Invert a matrix.
-    auto m11 = invert2( m1 );
+    auto m11 = m1;
+    invert( m1 );
     cout << "testing inverse ";
     if( m11 != m1.inverse() )
     {

@@ -21,10 +21,7 @@ typedef std::tuple<size_t, size_t, double> column_op_t;
 
 void apply_column_operation( Eigen::MatrixXd & m, const column_op_t &p )
 {
-    size_t c1 = std::get<0>(p);
-    size_t c2 = std::get<1>(p);
-    double s = std::get<2>(p);
-    m.col(c1) += s * m.col(c2);
+    m.col(std::get<0>(p)) += std::get<2>(p) * m.col( std::get<1>(p) );
 }
 
 void apply_column_operations( Eigen::MatrixXd &m, const std::vector<column_op_t> &ps)
@@ -83,7 +80,7 @@ void invert( Eigen::MatrixXd& m )
 }
 
 /* --------------------------------------------------------------------------*/
-/**
+/** NOTE: This method is horribly slow.
  * @Synopsis  Invert a matrix using elementary column operations.
  *
  * @Param m   Given matrix.
@@ -110,7 +107,7 @@ void invert( Eigen::MatrixXd& m )
  *
  */
 /* ----------------------------------------------------------------------------*/
-Eigen::MatrixXd invert2( const Eigen::MatrixXd& mat )
+Eigen::MatrixXd invert_horribly_slow( const Eigen::MatrixXd& mat )
 {
     Eigen::MatrixXd m(mat);
     const size_t N = m.rows();
