@@ -64,7 +64,8 @@ void benchmark( )
         double eigenT = (double)(t1-t0)/CLOCKS_PER_SEC;
 
         t0 = clock();
-        auto m1 = invert2( m );
+        auto m1 = m;
+        invert( m1 );
         t1 = clock();
 
         if( (m1-mInv).norm() > 1e-6 )
