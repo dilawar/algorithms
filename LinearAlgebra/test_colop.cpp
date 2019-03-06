@@ -23,7 +23,6 @@ int test( )
     m << 1,2,3,4, 0,1,0,0, 3,0,1,0 ,0,0,0,1;
     auto m1 = m;
 
-    // A column operator.
     column_op_t p1 = {2, 1, -1.5 };
     column_op_t p2 = {0, 2, -0.5 };
 
@@ -38,12 +37,14 @@ int test( )
     }
 
     // Invert a matrix.
-    auto m11 = invert2( m1 );
+    auto m11 = m1;
+    invert( m1 );
     cout << "testing inverse ";
     if( m11 != m1.inverse() )
     {
         cout << "Expected\n" << m1.inverse() << endl
             << "Got\n" << m11 << endl;
+        cout << "Original" << endl << m1 << endl;
         throw;
     }
     cout << "     ... PASSED!" << endl;
@@ -63,8 +64,8 @@ void benchmark( )
         clock_t t1 = clock();
         double eigenT = (double)(t1-t0)/CLOCKS_PER_SEC;
 
-        MatrixXd m1(m);
         t0 = clock();
+        auto m1 = m;
         invert( m1 );
         t1 = clock();
 
@@ -72,6 +73,7 @@ void benchmark( )
         {
             cout << "Got " << endl << m1 << endl;
             cout << "Expected " << endl << mInv << endl;
+            cout << "Original matrix was " << endl << m << endl;
             cout<< "Error : " << endl << (m1 - mInv).norm() << endl;
             throw;
         }
