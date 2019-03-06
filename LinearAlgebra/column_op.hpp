@@ -106,6 +106,11 @@ Eigen::MatrixXd invert2( Eigen::MatrixXd& m )
             m.col(ii) += s * m.col(i);
             e(i, ii) = s;
         }
+
+        cout << "======" << endl;
+        cout << m << endl;
+        cout << e << endl;
+        cout << e * m << endl;
         colOpMap[i] = e;
     }
 
