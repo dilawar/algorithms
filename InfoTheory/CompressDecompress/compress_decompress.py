@@ -27,9 +27,9 @@ def entropy( freq ):
         entropy -= v * math.log( v, 2 )
     return (N * math.log( N, 2 ) + entropy) / N
 
-def compress( txt, args ):
+def compress(filename, args ):
     print( 'Generating codebook', end = '')
-    sys.stdout.flush( )
+    with open(filename, 'r') as f: txt = f.read()
     freq = Counter( txt )
     codebook = huffman.codebook( freq.items( ) )
     avgCode = 0.0
@@ -66,20 +66,20 @@ def compress( txt, args ):
     print( '| Compressed file size : %d' % s2 )
     print( '| Compression ratio    : %f' % (s1 / float( s2 ) ) )
 
-def decompress( txt, args ):
+def decompress(filename, args ):
     """Decompress given file 
     """
+    with open(filename, 'rb') as f:
+        txt = f.read()
     codebook, txt = txt.split( delim_ )
     codebook = eval( codebook )
-    print( 'Decompressing %s' % args.file, end = '' )
-    sys.stdout.flush( )
+    print(codebook)
+    print( 'Decompressing %s' % args.file)
     res = ''
-    N = len( txt )
     code = ''
     for i, x in enumerate(txt):
         # Convert to binary string and remove prefix of 0b.
-        cb = bitarray.bitarray( )
-        cb.frombytes( x )
+        cb = bitarray.bitarray(x)
         for c in cb.to01( ):
             code += c
             if code in codebook:
@@ -87,28 +87,18 @@ def decompress( txt, args ):
                 code = ''
 
     print( '.. done.' )
-
     # remove extensition
-    outfile = args.file.replace( '.dx', '', 1 )
-    with open( outfile, 'w' ) as f:
-        f.write( res )
-    print( 'Decompressed to %s' % outfile )
+    #  outfile = args.file.replace( '.dx', '', 1 )
+    sys.stdout.write( res )
 
 
 def process( args ):
     filename = args.file
-    print( 'Reading %s (%d MB)' % (filename, os.path.getsize(filename)/(1024**2))
-            , end = '' )
-    sys.stdout.flush( )
-    with open( filename, 'r' ) as f:
-        txt = '%s' % f.read( )
-    print( '.. done.' )
-
     if args.compress:
-        compress( txt, args )
+        compress(filename, args )
 
     if args.decompress:
-        decompress( txt, args )
+        decompress(filename, args )
 
 
 def main( args ):
