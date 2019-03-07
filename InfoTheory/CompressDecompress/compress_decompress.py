@@ -28,21 +28,19 @@ def entropy( freq ):
     return (N * math.log( N, 2 ) + entropy) / N
 
 def compress(filename, args ):
-    print( 'Generating codebook', end = '')
-    with open(filename, 'r') as f: txt = f.read()
+    print( 'Generating codebook')
+    with open(filename, 'rb') as f: 
+        txt = f.read().decode('utf8', 'ignore')
     freq = Counter( txt )
-    codebook = huffman.codebook( freq.items( ) )
+    codebook = huffman.codebook(freq.items())
     avgCode = 0.0
-    print( '.. done.' )
-
-    print( 'Compressing files', end = '' )
-    sys.stdout.flush( )
-
+    print( 'Compressing files')
     enc_ = bitarray.bitarray( )
-    for i, a in enumerate( txt ):
+    for i, a in enumerate(txt):
         code = codebook[a]
         avgCode = (avgCode * i + len(code) ) / (i+1)
-        enc_.extend( code )
+        enc_.extend(code)
+    print(f'Average code length {avgCode:.3f}')
     print( '      .. done.' )
 
     # Write to compressed file. Add the codebook as well. This does not change
@@ -50,10 +48,10 @@ def compress(filename, args ):
     outfile = '%s.dx' % args.file 
     with open( outfile, 'wb' ) as fo:
         revCodeBook = dict((v, k) for k, v in codebook.items())
-        codebookStr = ('%s' % revCodeBook).replace( ' ', '' )
-        fo.write( codebookStr.encode( ) )
-        fo.write( delim_ )
-        fo.write( enc_.tobytes( ) )
+        codebookStr = str(revCodeBook).encode()
+        fo.write(codebookStr)
+        fo.write(delim_)
+        fo.write(enc_.tobytes())
 
     bestCode = entropy( freq )
     print( 'Average codeword length      : %f' % avgCode )
@@ -72,23 +70,19 @@ def decompress(filename, args ):
     with open(filename, 'rb') as f:
         txt = f.read()
     codebook, txt = txt.split( delim_ )
-    codebook = eval( codebook )
-    print(codebook)
+    codebook = eval(codebook)
     print( 'Decompressing %s' % args.file)
     res = ''
     code = ''
     for i, x in enumerate(txt):
         # Convert to binary string and remove prefix of 0b.
-        cb = bitarray.bitarray(x)
-        for c in cb.to01( ):
+        cb = f'{x:08b}'
+        for c in cb:
             code += c
             if code in codebook:
-                res += codebook[code]
+                r = codebook[code]
+                res += r
                 code = ''
-
-    print( '.. done.' )
-    # remove extensition
-    #  outfile = args.file.replace( '.dx', '', 1 )
     sys.stdout.write( res )
 
 
