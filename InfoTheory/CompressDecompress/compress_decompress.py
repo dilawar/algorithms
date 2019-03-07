@@ -71,7 +71,6 @@ def decompress(filename, args ):
         txt = f.read()
     codebook, txt = txt.split( delim_ )
     codebook = eval(codebook)
-    print( 'Decompressing %s' % args.file)
     res = ''
     code = ''
     for i, x in enumerate(txt):
