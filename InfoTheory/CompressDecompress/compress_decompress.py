@@ -1,12 +1,4 @@
-#!/usr/bin/env python
-
-from __future__ import print_function, division
-
-"""encode.py: 
-
-Encode a data file.
-
-"""
+#!/usr/bin/env python3
     
 __author__           = "Dilawar Singh"
 __copyright__        = "Copyright 2017-, Dilawar Singh"
@@ -17,22 +9,10 @@ __status__           = "Development"
 
 import sys
 import os
-import pickle
 from collections import Counter
 import math
-
-py = sys.version_info.major
-
-try:
-    import huffman      # pip install huffman
-    import bitarray     # pip install bitarray
-except ImportError as e:
-    import subprocess
-    subprocess.call( [ 'pip%d' % py, 'install', 'huffman', '--user' ] )
-    subprocess.call( [ 'pip%d' % py, 'install', 'bitarray', '--user' ] )
-
-import huffman     
-import bitarray   
+import huffman      # pip install huffman
+import bitarray     # pip install bitarray
 
 delim_ = b'__####__'
 
