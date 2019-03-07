@@ -14,7 +14,15 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
+class Channel():
+    
+    def __init__(self):
+        pass
+
+
 def main():
+    msg = plt.imread( './data.png' )
+    print( msg )
     pass
 
 if __name__ == '__main__':
