@@ -9,7 +9,21 @@ Python version 3.5 or higher. Package `huffman` module from PyPi.
 
     python3 -m pip install huffman 
 
-# Compress
+# Usage 
+
+    usage: compress_decompress.py [-h] [--compress] [--decompress] file
+
+    Compress/Decompress a file using Huffman codes.
+
+    positional arguments:
+      file              File to compress/decompress.
+
+    optional arguments:
+      -h, --help        show this help message and exit
+      --compress, -c    Compress file
+      --decompress, -d  Decompress file
+
+## Compress
 
 To compress a file (e.g. `war_and_peace.txt`), run the following command.
 
@@ -17,7 +31,7 @@ To compress a file (e.g. `war_and_peace.txt`), run the following command.
 
 It will generate a compressed file `war_and_peace.txt.dx`. 
 
-# Decompress
+## Decompress
 
 To decompress `war_and_peace.txt.dx` file. Run the following command.
 
