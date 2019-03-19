@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import division
 """main.py: 
 
 """
@@ -24,16 +25,16 @@ def show_frame(f, wait=200):
 
 def process(filename):
     fs = fr.read_frames(filename)
-    kernel = np.ones((11,11), np.uint8)
+    kernel = np.ones((3,3), np.uint8)
     for f in fs:
         f = cv2.resize(f, None, fx=0.4, fy=0.4)
-        f1 = f.copy()
         f = cv2.equalizeHist(f)
-        f = cv2.blur(f, (13,13))
-        #  f = cv2.morphologyEx(f, cv2.MORPH_OPEN, kernel)
+        f1 = f.copy()
+        #  f = cv2.medianBlur(f, 3)
         #  cnts = cd.contours(f)
         #  cv2.drawContours(f, cnts, -1, 255)
-        f[f < f.mean() + 3*f.std() ] = 0
+        f[f < f.max()-10] = 0
+        f = cv2.morphologyEx(f, cv2.MORPH_OPEN, kernel)
         show_frame(f)
 
 
