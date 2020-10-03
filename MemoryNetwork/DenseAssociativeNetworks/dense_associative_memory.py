@@ -1,5 +1,8 @@
 """
-Dense associative memory.
+Dense associative memory. 
+Krotov & Hopfield 2016
+
+https://arxiv.org/pdf/1606.01164.pdf
 """
 
 __author__ = "Dilawar Singh"
