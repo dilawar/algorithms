@@ -30,7 +30,7 @@ class Pattern:
         self.vals = [1 if x else -1 for x in self.vec]
 
     def __repr__(self):
-        return "".join([f"{x:2d}" for x in self.vec])
+        return "".join([f"{x:2d}" for x in self.vals])
 
     def __len__(self):
         return len(self.vec)
@@ -103,16 +103,18 @@ class DenseMemoryNetwork:
 
 def main():
     # generate xor patterns.
-    xors = [
-        Pattern([0, 0, 0]),
-        Pattern([0, 1, 1]),
-        Pattern([1, 0, 1]),
-        Pattern([1, 1, 0]),
+    patterns = [
+        Pattern([0, 0, 0, 1]),
+        Pattern([0, 1, 1, 1]),
+        Pattern([1, 0, 1, 0]),
+        Pattern([1, 1, 0, 1]),
     ]
-    nrns = [Neuron(random.choice(STATES)) for i in range(len(xors[0]))]
-    n = DenseMemoryNetwork(nrns, xors)
-    print(n.sigma)
+    nrns = [Neuron(random.choice(STATES)) for i in range(len(patterns[0]))]
+    n = DenseMemoryNetwork(nrns, patterns)
+    print(patterns)
+    print(n.sigma, end=' ')
     n.update(2)
+    n.update(3)
     print(n.sigma)
 
 
