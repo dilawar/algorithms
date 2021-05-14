@@ -76,13 +76,13 @@ def main():
     cc = max(nx.connected_components(g), key=len)
     lG = g.subgraph(list(cc))
 
-    k = 3
+    k = 5
     assert nx.is_connected(lG), "Required connected graph"
-    C = nx.algorithms.community.asyn_fluid.asyn_fluidc(lG, k=k, max_iter=2000)
+    C = nx.algorithms.community.asyn_fluid.asyn_fluidc(lG, k=k, max_iter=3000)
     C = list(C)
 
     pos = nx.get_node_attributes(lG, 'pos')
-    colors = 'rgbcm'
+    colors = 'bgkrcmy'
     for i, c in zip(range(k), colors):
         n1 = list(C[i])
         ggg = lG.subgraph(n1)
