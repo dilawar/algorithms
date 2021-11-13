@@ -58,3 +58,11 @@ generates this maze and the `_maze.txt` file.
 Command to plot this maze.
 
 `python3 maze.py -s 20,20 --show-solution --plot _maze_solution.png`
+
+# Solving this maze using brute force
+
+I used a particle simulator called Smoldyn to solve this maze (script `./maze_solver_particles.py`). 
+Ideally one should plot the trajectory of escaped particle and display the
+solution. May be next time.
+
+You can see the video here https://www.youtube.com/watch?v=9pwQInVi59I
