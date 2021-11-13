@@ -97,9 +97,13 @@ def _to_maze(g):
     return lines
 
 
-def create_maze(shape: T.Tuple[int, int] = (10, 10), is_perfect: bool = False):
+def create_maze(
+    shape: T.Tuple[int, int] = (10, 10), is_perfect: bool = False, hardness: int
+    = 1
+):
     """Create maze of given shape."""
     g = gen_seed_graph(*shape, is_perfect)
+    _sparsify(g, niter=20 * hardness)
     lines = _to_maze(g)
     return g, lines
 
@@ -121,6 +125,22 @@ def _draw_path(path, ax):
     ax.plot(xs, ys, alpha=0.5, color="blue")
 
 
+def _sparsify(g, niter=10):
+    """To make the maze harder, increase niter."""
+    m, n = g.graph["shape"]
+    source, target = (0, 0), (m - 1, n - 1)
+    for i in range(niter):
+        # select an edge randomly
+        u, v = random.choice(list(g.edges()))
+        if g.degree(u) + g.degree(v) <= 2:
+            continue
+        # remove this edge
+        g.remove_edge(u, v)
+        # check if the maze is still valid, if not add the edge back.
+        if not nx.has_path(g, source, target):
+            g.add_edge(u, v)
+
+
 def main(args):
     args.shape = (
         (int(x) for x in args.shape.split(","))
@@ -140,7 +160,7 @@ def main(args):
         with open(args.output, "w") as f:
             for l in lines:
                 f.write(f"{l}\n")
-            print(f'[+] maze is saved to {args.output}')
+            print(f"[+] maze is saved to {args.output}")
 
     if args.plot is not None:
         print(f"[+] Maze is saved to {args.plot}")
