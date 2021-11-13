@@ -42,7 +42,7 @@ def gen_seed_graph(m: int, n: int, is_perfect: bool = False):
     g = nx.Graph(shape=(m, n))
     nodes = []
     for i, j in itertools.product(range(m), range(n)):
-        g.add_node((i, j), pos=(i+1, j+1))
+        g.add_node((i, j), pos=(i + 1, j + 1))
         nodes.append((i, j))
 
     source, target = (0, 0), (m - 1, n - 1)
@@ -122,6 +122,11 @@ def _draw_path(path, ax):
 
 
 def main(args):
+    args.shape = (
+        (int(x) for x in args.shape.split(","))
+        if isinstance(args.shape, str)
+        else args.shape
+    )
     g, lines = create_maze(args.shape, is_perfect=args.perfect)
     ax = plt.subplot(111)
     _draw_lines(lines, ax=ax)
@@ -130,11 +135,12 @@ def main(args):
         # add solutions
         _draw_path(_find_a_solution(g), ax=ax)
 
-    lines = [ f"{l[0][0]} {l[0][1]} {l[1][0]} {l[1][1]}" for l in lines]
+    lines = [f"{l[0][0]} {l[0][1]} {l[1][0]} {l[1][1]}" for l in lines]
     if args.output is not None:
-        with open(args.output, 'w') as f:
+        with open(args.output, "w") as f:
             for l in lines:
                 f.write(l)
+            print(f'[+] maze is saved to {args.output}')
 
     if args.plot is not None:
         print(f"[+] Maze is saved to {args.plot}")
@@ -150,9 +156,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "-s",
         "--shape",
-        type=tuple,
         default=(10, 10),
-        help="Gridsize of the maze.",
+        help="Gridsize of the maze as csv e.g. -s 20,20 or -s 10,10",
     )
     parser.add_argument("--perfect", action="store_false", help="Perfect maze?")
     parser.add_argument(
