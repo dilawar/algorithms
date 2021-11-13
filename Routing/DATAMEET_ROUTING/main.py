@@ -41,6 +41,9 @@ def main():
 
     plt.figure(figsize=(10, 5))
     infile = Path(sys.argv[1])
+    k = int(sys.argv[2])
+    print('[INFO] Partitioning {infile} in {k} partitions')
+
     pklfile = Path(f"{infile}.g.pkl")
     if pklfile.exists():
         g = nx.read_gpickle(pklfile)
@@ -76,7 +79,6 @@ def main():
     cc = max(nx.connected_components(g), key=len)
     lG = g.subgraph(list(cc))
 
-    k = 5
     assert nx.is_connected(lG), "Required connected graph"
     C = nx.algorithms.community.asyn_fluid.asyn_fluidc(lG, k=k, max_iter=3000)
     C = list(C)
