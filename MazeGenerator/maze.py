@@ -139,7 +139,7 @@ def main(args):
     if args.output is not None:
         with open(args.output, "w") as f:
             for l in lines:
-                f.write(l)
+                f.write(f"{l}\n")
             print(f'[+] maze is saved to {args.output}')
 
     if args.plot is not None:
