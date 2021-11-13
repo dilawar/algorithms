@@ -42,7 +42,7 @@ def gen_seed_graph(m: int, n: int, is_perfect: bool = False):
     g = nx.Graph(shape=(m, n))
     nodes = []
     for i, j in itertools.product(range(m), range(n)):
-        g.add_node((i, j), pos=(i + 1, j + 1))
+        g.add_node((i, j), pos=(i, j))
         nodes.append((i, j))
 
     source, target = (0, 0), (m - 1, n - 1)
@@ -83,11 +83,11 @@ def _to_maze(g):
     m, n = nrow - 1, ncol - 1
     r = 0.5
     lines = [
-        ((m + r, 0 - r), (0, 0 - r)),  # entry notch
-        ((m + r, n + r), (m + r, 0 - r)),
-        ((0 - r, m + r), (m, n + r)),  # exit notch
         ((0 - r, 0 - r), (0 - r, m + r)),
-    ]
+        ((0 - r, m + r), (n , m+r)),  # exit notch
+        ((n+r,0-r), (n + r, m + r)),
+        ((0, 0 - r), (n + r, 0 - r))  # entry notch
+        ]
     for a in g.nodes():
         bs = _possible_neighbours(a, g.graph["shape"])
         cs = list(g.neighbors(a))
@@ -98,8 +98,7 @@ def _to_maze(g):
 
 
 def create_maze(
-    shape: T.Tuple[int, int] = (10, 10), is_perfect: bool = False, hardness: int
-    = 1
+    shape: T.Tuple[int, int] = (10, 10), is_perfect: bool = False, hardness: int = 1
 ):
     """Create maze of given shape."""
     g = gen_seed_graph(*shape, is_perfect)
