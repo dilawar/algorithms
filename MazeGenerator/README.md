@@ -38,6 +38,8 @@ optional arguments:
 
 ```
 
+__NOTE__: I have not yet implemented `perfect` option.
+
 ## Examples
 
 ### 10x10 maze 
